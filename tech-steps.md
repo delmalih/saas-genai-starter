@@ -49,7 +49,7 @@ evals/     → eval harness + datasets
 - `alembic upgrade head` runs clean on a fresh DB.
 - pytest setup with an async test client and a per-test transactional DB fixture.
 
-### [ ] SGS-004 — Web skeleton: route groups, layout, design system (1d)
+### [x] SGS-004 — Web skeleton: route groups, layout, design system (1d)
 **Depends on:** SGS-001
 - Route groups: `app/(marketing)/` (starter landing page) and `app/(app)/` (protected app shell).
 - React Server Components by default; `"use client"` only where required.
