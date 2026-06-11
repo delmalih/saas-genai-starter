@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 Role = Literal["owner", "admin", "member"]
 
@@ -31,4 +31,31 @@ class MemberOut(BaseModel):
 
 
 class MemberRoleUpdate(BaseModel):
+    role: Role
+
+
+InvitableRole = Literal["admin", "member"]
+
+
+class InvitationCreate(BaseModel):
+    email: EmailStr
+    role: InvitableRole = "member"
+
+
+class InvitationOut(BaseModel):
+    id: uuid.UUID
+    email: str
+    role: Role
+    invited_by: str
+    expires_at: datetime
+    created_at: datetime
+
+
+class InvitationAccept(BaseModel):
+    token: str = Field(min_length=20, max_length=128)
+
+
+class AcceptedInvitationOut(BaseModel):
+    organization_id: uuid.UUID
+    organization_name: str
     role: Role

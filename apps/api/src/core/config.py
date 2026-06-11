@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     # When set, iss/aud claims are verified against these values.
     auth_jwt_issuer: str | None = None
     auth_jwt_audience: str | None = None
+    # Base URL of the web app — used to build links in emails.
+    web_base_url: str = "http://localhost:3000"
+    # Email delivery: Resend when the key is set, console logging otherwise.
+    resend_api_key: str | None = None
+    email_from: str = "onboarding@resend.dev"
 
     @property
     def is_production(self) -> bool:

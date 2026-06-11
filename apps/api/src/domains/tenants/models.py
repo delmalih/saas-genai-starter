@@ -42,3 +42,24 @@ class Membership(Base):
     organization: Mapped[Organization] = relationship(back_populates="memberships", lazy="raise")
 
     __table_args__ = (UniqueConstraint("organization_id", "user_id"),)
+
+
+class Invitation(Base):
+    __tablename__ = "invitations"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"), index=True
+    )
+    email: Mapped[str] = mapped_column(String(254))
+    role: Mapped[str] = mapped_column(String(16), default=ROLE_MEMBER)
+    # Only the SHA-256 of the token is stored — a database leak does not
+    # leak usable invitation links.
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    invited_by: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    organization: Mapped[Organization] = relationship(lazy="raise")

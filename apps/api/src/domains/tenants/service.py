@@ -1,17 +1,28 @@
+import hashlib
+import secrets
 import uuid
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.auth import AuthenticatedUser
-from src.core.errors import Conflict, Forbidden, NotFound
+from src.core.errors import BadRequest, Conflict, Forbidden, NotFound
 from src.domains.tenants.models import (
     ROLE_ADMIN,
     ROLE_MEMBER,
     ROLE_OWNER,
+    Invitation,
     Membership,
     Organization,
 )
 from src.domains.tenants.repository import TenantRepository
+
+INVITATION_TTL = timedelta(days=7)
+
+
+def hash_invitation_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
 
 _ROLE_RANK = {ROLE_MEMBER: 0, ROLE_ADMIN: 1, ROLE_OWNER: 2}
 
@@ -104,6 +115,86 @@ class TenantService:
             await self._ensure_not_last_owner(organization_id, target_user_id)
 
         await self._repo.delete_membership(target)
+
+    async def create_invitation(
+        self,
+        actor: AuthenticatedUser,
+        organization_id: uuid.UUID,
+        email: str,
+        role: str,
+    ) -> tuple[Invitation, str]:
+        """Create a single-use invitation; returns it with the plaintext token
+        (only ever held in memory — the database stores its hash)."""
+        actor_membership = await self._require_membership(organization_id, actor.user_id)
+        self._require_rank(actor_membership, ROLE_ADMIN)
+        if role not in (ROLE_ADMIN, ROLE_MEMBER):
+            raise BadRequest("Only admin or member roles can be invited")
+
+        members = await self._repo.list_members(organization_id)
+        profiles = await self._repo.resolve_users([m.user_id for m in members])
+        normalized = email.lower()
+        if any((profile.get("email") or "").lower() == normalized for profile in profiles.values()):
+            raise Conflict("This user is already a member")
+
+        token = secrets.token_urlsafe(32)
+        invitation = await self._repo.add_invitation(
+            Invitation(
+                organization_id=organization_id,
+                email=normalized,
+                role=role,
+                token_hash=hash_invitation_token(token),
+                invited_by=actor.user_id,
+                expires_at=datetime.now(UTC) + INVITATION_TTL,
+            )
+        )
+        return invitation, token
+
+    async def list_invitations(
+        self, actor: AuthenticatedUser, organization_id: uuid.UUID
+    ) -> list[Invitation]:
+        actor_membership = await self._require_membership(organization_id, actor.user_id)
+        self._require_rank(actor_membership, ROLE_ADMIN)
+        return await self._repo.list_pending_invitations(organization_id)
+
+    async def revoke_invitation(
+        self,
+        actor: AuthenticatedUser,
+        organization_id: uuid.UUID,
+        invitation_id: uuid.UUID,
+    ) -> None:
+        actor_membership = await self._require_membership(organization_id, actor.user_id)
+        self._require_rank(actor_membership, ROLE_ADMIN)
+        invitation = await self._repo.get_invitation(organization_id, invitation_id)
+        if invitation is None or invitation.revoked_at or invitation.accepted_at:
+            raise NotFound("Invitation not found")
+        invitation.revoked_at = datetime.now(UTC)
+
+    async def accept_invitation(self, user: AuthenticatedUser, token: str) -> Membership:
+        invitation = await self._repo.get_invitation_by_token_hash(hash_invitation_token(token))
+        if invitation is None:
+            raise BadRequest("Invalid invitation")
+        if invitation.revoked_at is not None:
+            raise BadRequest("This invitation has been revoked")
+        if invitation.accepted_at is not None:
+            raise BadRequest("This invitation has already been used")
+        if invitation.expires_at < datetime.now(UTC):
+            raise BadRequest("This invitation has expired")
+        if not user.email or user.email.lower() != invitation.email:
+            raise Forbidden("This invitation was issued for another email address")
+        if await self._repo.get_membership(invitation.organization_id, user.user_id):
+            raise Conflict("You are already a member of this organization")
+
+        invitation.accepted_at = datetime.now(UTC)
+        self._repo.add_membership(
+            Membership(
+                organization_id=invitation.organization_id,
+                user_id=user.user_id,
+                role=invitation.role,
+            )
+        )
+        membership = await self._repo.get_membership(invitation.organization_id, user.user_id)
+        assert membership is not None  # noqa: S101 — just created above
+        return membership
 
     async def _require_membership(self, organization_id: uuid.UUID, user_id: str) -> Membership:
         membership = await self._repo.get_membership(organization_id, user_id)
