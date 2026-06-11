@@ -1,0 +1,119 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) — or any AI coding assistant —
+when working with code in this repository.
+
+## Project Overview
+
+`saas-genai-starter` is an **open-source, production-grade SaaS starter for GenAI products**.
+It is a public portfolio project: code quality, architecture clarity, and documentation matter
+as much as features. The pitch: "the starter I wish I had when founding my last SaaS" —
+it covers what demo-grade starters ignore: multi-tenancy, LLM cost tracking, resilience,
+observability, infra as code, tests, and evals.
+
+**Everything in this repo is written in English** (code, comments, docs, commit messages,
+README), even if the maintainer communicates in French. Never write French in committed files.
+
+## Workflow
+
+- The development backlog lives in `tech-steps.md` (Jira-style tickets, `SGS-XXX` IDs).
+  Work ticket by ticket, respect the dependency order, and update the ticket checkbox
+  (`[ ]` → `[~]` → `[x]`) when starting/finishing one.
+- Branch names: `sgs-021-llm-resilience`. Commit messages: conventional commits with the
+  ticket ID, e.g. `feat(llm): add retry with exponential backoff [SGS-021]`.
+- Every ticket has acceptance criteria — they define "done". Write the tests they imply.
+
+## Commands
+
+```bash
+make setup        # Install all deps (pnpm install, uv sync) + create local DB
+make dev          # Boot docker-compose (postgres+pgvector, redis) + API + web
+make test         # Run all tests (web + api)
+make lint         # ruff + mypy (api), eslint + tsc (web)
+make evals        # Run the RAG eval harness (requires API keys)
+make migrate      # alembic upgrade head
+make makemigration m="..."   # Autogenerate an alembic migration
+make generate-client          # Regenerate the typed TS client from OpenAPI
+```
+
+App-specific:
+```bash
+cd apps/web && pnpm dev       # Next.js only (port 3000)
+cd apps/api && uv run uvicorn src.main:app --reload   # API only (port 8000)
+cd apps/api && uv run pytest                           # API tests only
+```
+
+## Architecture
+
+```
+apps/
+├── web/                  # Next.js 15, App Router, TypeScript strict
+│   ├── app/(marketing)/  # Public landing page
+│   ├── app/(app)/        # Protected app: chat, documents, usage, settings, admin
+│   ├── components/ui/    # shadcn/ui (vendored)
+│   └── lib/api/          # Typed client generated from FastAPI OpenAPI + fetch/SSE wrapper
+├── api/                  # FastAPI, Python 3.12, managed with uv
+│   ├── src/core/         # config (pydantic-settings), db (SQLAlchemy 2 async), logging, telemetry
+│   ├── src/domains/      # One package per domain: tenants/, chat/, documents/, usage/, billing/
+│   │   └── <domain>/     # router.py, service.py, repository.py, models.py, schemas.py
+│   ├── src/llm/          # Provider abstraction, resilience, cost accounting, rate limiting
+│   └── tests/
+infra/terraform/          # GCP modules: cloud-run, cloud-sql, secret-manager, cloud-tasks, gcs
+evals/                    # YAML datasets + LLM-as-judge runner
+```
+
+### Key architectural decisions (do not silently change these)
+
+- **Auth**: Better Auth lives in the Next.js app (Postgres-backed, `auth` schema). FastAPI
+  validates Better Auth JWTs via the web app's JWKS endpoint. The API never manages
+  credentials itself.
+- **Multi-tenancy**: every tenant-owned table has an indexed `tenant_id`. Data access goes
+  through a repository base class that injects the tenant filter — domain code can never
+  forget it. The active org comes from the `X-Org-Id` header, verified against membership.
+  Postgres RLS is documented as a hardening option, not implemented in v1.
+- **LLM layer** (`src/llm/`): domain code never imports `anthropic` directly — always go
+  through the `LLMProvider` abstraction. Default chat model: `claude-sonnet-4-6`.
+  Embeddings: Voyage AI (Claude has no embeddings API). Every call records tenant, feature
+  tag, tokens (incl. cached), cost, and latency to the `llm_usage` table. Resilience
+  (retry/backoff, circuit breaker) and per-tenant rate limiting (Redis) live in this layer.
+- **Async jobs**: behind a `TaskQueue` interface. ARQ (Redis) is the local/default driver;
+  Cloud Tasks is the production driver. Workers are idempotent and retried (max 3).
+- **Storage**: behind an interface — local disk in dev, GCS in prod. Tenant-prefixed paths.
+- **Streaming**: chat uses SSE. Usage must be recorded even on client disconnect or
+  mid-stream failure.
+- **Vector search**: pgvector (HNSW, cosine) in the same Postgres — no separate vector DB.
+  Chunks keep document id + page number for citations.
+
+## Code Conventions
+
+### TypeScript / Next.js
+- React Server Components by default; add `"use client"` only when required. Minimize
+  `useEffect`/`useState`.
+- TypeScript strict. Prefer `interface` over `type`. No `enum` — use const maps.
+- Functional components, named exports. Directories in lowercase-with-dashes.
+- Tailwind (mobile-first) + shadcn/ui patterns; `cva` for variants, `clsx`/`tailwind-merge`
+  for class merging.
+
+### Python / FastAPI
+- Python 3.12, fully typed, mypy-clean. Ruff for lint + format.
+- SQLAlchemy 2 style (`Mapped[...]`, `mapped_column`), async sessions everywhere.
+- Pydantic v2 schemas at the API boundary; domain services take/return domain types.
+- Dependency injection via FastAPI `Depends` for auth, tenant, db session.
+- Raise typed exceptions (`RateLimited`, `ProviderUnavailable`, ...) — a single exception
+  handler maps them to the error envelope. No bare `except`.
+- Tests: pytest + pytest-asyncio, transactional DB fixture per test, fake LLM provider for
+  unit tests, real-API smoke tests marked and skipped without keys.
+
+### General
+- No secrets in code or committed files, ever — env vars only, `.env.example` documents them.
+- Comments only for non-obvious constraints; never narrate what code does.
+- Every PR: tests for the ticket's acceptance criteria, CI green, generated client fresh.
+- Cross-tenant isolation is the #1 invariant — when touching any repository or query,
+  preserve and test tenant scoping.
+
+## Environment
+
+- Local infra via `docker-compose`: postgres:16 + pgvector, redis:7.
+- Required env vars (see `.env.example`): `DATABASE_URL`, `REDIS_URL`, `ANTHROPIC_API_KEY`,
+  `VOYAGE_API_KEY`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_API_URL`.
+- Optional/env-gated: Google OAuth creds, Resend (emails), Stripe (billing flag), GCS bucket.
