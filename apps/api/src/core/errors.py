@@ -29,6 +29,21 @@ class AuthServiceUnavailable(ApiError):
         super().__init__(503, "auth_unavailable", "Could not reach the signing key service")
 
 
+class Forbidden(ApiError):
+    def __init__(self, message: str = "Not allowed") -> None:
+        super().__init__(403, "forbidden", message)
+
+
+class NotFound(ApiError):
+    def __init__(self, message: str = "Resource not found") -> None:
+        super().__init__(404, "not_found", message)
+
+
+class Conflict(ApiError):
+    def __init__(self, message: str) -> None:
+        super().__init__(409, "conflict", message)
+
+
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def handle_api_error(request: Request, exc: ApiError) -> JSONResponse:

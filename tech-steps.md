@@ -94,7 +94,7 @@ Decision: **Better Auth** in the Next.js app (Postgres-backed), FastAPI validate
 **Acceptance criteria**
 - Protected test endpoint rejects missing/invalid tokens; integration test covers expiry and bad signature.
 
-### [ ] SGS-012 — Organizations, memberships, roles (1d)
+### [x] SGS-012 — Organizations, memberships, roles (1d)
 **Depends on:** SGS-011
 - Models: `Organization`, `Membership(user_id, org_id, role)` with roles `owner | admin | member` (string constants, no enum-typed DB columns).
 - On signup: auto-create a personal organization, user becomes `owner`.

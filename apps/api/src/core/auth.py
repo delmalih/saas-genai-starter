@@ -59,6 +59,7 @@ def get_jwks_cache() -> JwksCache:
 class AuthenticatedUser:
     user_id: str
     email: str | None
+    name: str | None = None
 
 
 async def get_current_user(
@@ -95,7 +96,7 @@ async def get_current_user(
     user_id = claims.get("sub")
     if not user_id:
         raise Unauthorized("Missing subject claim")
-    return AuthenticatedUser(user_id=user_id, email=claims.get("email"))
+    return AuthenticatedUser(user_id=user_id, email=claims.get("email"), name=claims.get("name"))
 
 
 CurrentUser = Annotated[AuthenticatedUser, Depends(get_current_user)]
