@@ -1,5 +1,7 @@
 # saas-genai-starter
 
+[![CI](https://github.com/davidelmalih/saas-genai-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/davidelmalih/saas-genai-starter/actions/workflows/ci.yml)
+
 > **Work in progress** — not ready for use yet.
 
 A production-grade, open-source SaaS starter for GenAI products: multi-tenancy, LLM cost

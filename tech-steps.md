@@ -66,7 +66,7 @@ evals/     → eval harness + datasets
 **Acceptance criteria**
 - A round-trip call from web → `GET /health` works with full type safety.
 
-### [ ] SGS-006 — CI pipeline (0.5d)
+### [x] SGS-006 — CI pipeline (0.5d)
 **Depends on:** SGS-003, SGS-004
 - GitHub Actions on PR + main: web (lint, typecheck, build), api (ruff, mypy, pytest with Postgres service container), client freshness check (SGS-005).
 - Status badge in README.
