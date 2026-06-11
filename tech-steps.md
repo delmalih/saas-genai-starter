@@ -37,7 +37,7 @@ evals/     → eval harness + datasets
 - Fresh clone → `make setup && make dev` → web on :3000, API on :8000, both healthy.
 - Documented in README "Quickstart" section.
 
-### [ ] SGS-003 — API skeleton: config, DB, migrations, logging (1d)
+### [x] SGS-003 — API skeleton: config, DB, migrations, logging (1d)
 **Depends on:** SGS-002
 - `src/core/config.py`: pydantic-settings, env-driven, fail-fast on missing required vars.
 - `src/core/db.py`: SQLAlchemy 2 async engine + session dependency.

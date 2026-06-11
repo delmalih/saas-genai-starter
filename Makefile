@@ -36,11 +36,11 @@ lint-web:
 evals: ## Run the RAG eval harness (requires API keys) — SGS-050
 	@echo "Not implemented yet (SGS-050)"
 
-migrate: ## Apply database migrations — wired in SGS-003
-	@echo "Not implemented yet (SGS-003)"
+migrate: ## Apply database migrations
+	cd apps/api && uv run alembic upgrade head
 
-makemigration: ## Autogenerate a migration: make makemigration m="add users" — wired in SGS-003
-	@echo "Not implemented yet (SGS-003)"
+makemigration: ## Autogenerate a migration: make makemigration m="add users"
+	cd apps/api && uv run alembic revision --autogenerate -m "$(m)"
 
 generate-client: ## Regenerate the typed TS client from OpenAPI — wired in SGS-005
 	@echo "Not implemented yet (SGS-005)"
