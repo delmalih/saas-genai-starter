@@ -5,6 +5,7 @@ description = "saas-genai-starter API — FastAPI backend"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.18.4",
+    "anthropic>=0.109.1",
     "asyncpg>=0.31.0",
     "email-validator>=2.3.0",
     "fastapi>=0.136.3",

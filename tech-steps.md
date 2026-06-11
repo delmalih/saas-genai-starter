@@ -133,7 +133,7 @@ Decision: **Better Auth** in the Next.js app (Postgres-backed), FastAPI validate
 Goal: the production-grade LLM plumbing that differentiates this starter — cost tracking,
 resilience, rate limiting. This epic is the core value of the repo.
 
-### [ ] SGS-020 — Provider abstraction (1d)
+### [x] SGS-020 — Provider abstraction (1d)
 **Depends on:** SGS-003
 - `src/llm/`: `LLMProvider` protocol with `complete()`, `stream()`, `embed()` — supports tool use and structured outputs (JSON schema).
 - Anthropic implementation (default model `claude-sonnet-4-6`), normalized message/response types so domain code never imports `anthropic` directly.
@@ -141,7 +141,7 @@ resilience, rate limiting. This epic is the core value of the repo.
 **Acceptance criteria**
 - Unit tests with a fake provider; one smoke test against the real API (skipped when no key is present).
 
-### [ ] SGS-021 — Resilience: retries, timeouts, circuit breaker (1d)
+### [x] SGS-021 — Resilience: retries, timeouts, circuit breaker (1d)
 **Depends on:** SGS-020
 - Exponential backoff with jitter on 429/5xx/timeouts (respect `retry-after`), configurable attempt budget.
 - Per-call timeout; simple circuit breaker (open after N consecutive failures, half-open probe).
