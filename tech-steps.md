@@ -87,7 +87,7 @@ Decision: **Better Auth** in the Next.js app (Postgres-backed), FastAPI validate
 **Acceptance criteria**
 - Signup → login → logout flows work locally; Google OAuth documented as optional (env-gated).
 
-### [ ] SGS-011 — API auth dependency (0.5d)
+### [x] SGS-011 — API auth dependency (0.5d)
 **Depends on:** SGS-003, SGS-010
 - FastAPI dependency `CurrentUser`: validates the Better Auth JWT against the web app's JWKS (cached), extracts `user_id`.
 - 401 handling with a consistent error envelope.

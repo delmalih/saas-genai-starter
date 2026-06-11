@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     database_url: str
     redis_url: str
     auth_jwks_url: str = "http://localhost:3000/api/auth/jwks"
+    # When set, iss/aud claims are verified against these values.
+    auth_jwt_issuer: str | None = None
+    auth_jwt_audience: str | None = None
 
     @property
     def is_production(self) -> bool:
