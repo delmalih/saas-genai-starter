@@ -42,5 +42,6 @@ migrate: ## Apply database migrations
 makemigration: ## Autogenerate a migration: make makemigration m="add users"
 	cd apps/api && uv run alembic revision --autogenerate -m "$(m)"
 
-generate-client: ## Regenerate the typed TS client from OpenAPI — wired in SGS-005
-	@echo "Not implemented yet (SGS-005)"
+generate-client: ## Regenerate the typed TS client from the FastAPI OpenAPI schema
+	cd apps/api && PYTHONPATH=. uv run python scripts/export_openapi.py > ../web/lib/api/openapi.json
+	pnpm --filter web exec openapi-typescript lib/api/openapi.json -o lib/api/schema.d.ts

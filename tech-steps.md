@@ -58,7 +58,7 @@ evals/     → eval harness + datasets
 **Acceptance criteria**
 - Marketing page and an empty authenticated shell render; navigation stubs for Chat, Documents, Usage, Settings.
 
-### [ ] SGS-005 — Typed API client generation (0.5d)
+### [x] SGS-005 — Typed API client generation (0.5d)
 **Depends on:** SGS-003, SGS-004
 - Generate TypeScript types from the FastAPI OpenAPI schema (`openapi-typescript`).
 - Thin fetch wrapper in `apps/web/lib/api/` handling auth header, errors, and SSE streams.
