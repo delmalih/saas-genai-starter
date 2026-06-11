@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import bindparam, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from src.domains.tenants.models import Membership, Organization
 
@@ -14,20 +15,24 @@ class TenantRepository:
         self._db = db
 
     async def list_memberships_for_user(self, user_id: str) -> list[Membership]:
+        # Eager-load the organization: lazy loading raises in async contexts.
         result = await self._db.execute(
             select(Membership)
             .where(Membership.user_id == user_id)
             .join(Organization)
+            .options(joinedload(Membership.organization))
             .order_by(Organization.created_at)
         )
         return list(result.scalars().unique().all())
 
     async def get_membership(self, organization_id: uuid.UUID, user_id: str) -> Membership | None:
         result = await self._db.execute(
-            select(Membership).where(
+            select(Membership)
+            .where(
                 Membership.organization_id == organization_id,
                 Membership.user_id == user_id,
             )
+            .options(joinedload(Membership.organization))
         )
         return result.scalar_one_or_none()
 

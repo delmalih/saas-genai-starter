@@ -34,6 +34,9 @@ class TenantService:
         await self._repo.create_organization(name, owner_user_id=user.user_id)
         return await self._repo.list_memberships_for_user(user.user_id)
 
+    async def get_membership_for(self, organization_id: uuid.UUID, user_id: str) -> Membership:
+        return await self._require_membership(organization_id, user_id)
+
     async def create_organization(self, user: AuthenticatedUser, name: str) -> Membership:
         organization = await self._repo.create_organization(name, owner_user_id=user.user_id)
         membership = await self._repo.get_membership(organization.id, user.user_id)

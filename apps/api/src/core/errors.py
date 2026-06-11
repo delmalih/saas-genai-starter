@@ -29,6 +29,11 @@ class AuthServiceUnavailable(ApiError):
         super().__init__(503, "auth_unavailable", "Could not reach the signing key service")
 
 
+class BadRequest(ApiError):
+    def __init__(self, message: str) -> None:
+        super().__init__(400, "bad_request", message)
+
+
 class Forbidden(ApiError):
     def __init__(self, message: str = "Not allowed") -> None:
         super().__init__(403, "forbidden", message)

@@ -4,6 +4,7 @@ from fastapi import APIRouter, status
 
 from src.core.auth import CurrentUser
 from src.core.db import DbSession
+from src.core.tenancy import CurrentTenant
 from src.domains.tenants.models import Membership
 from src.domains.tenants.schemas import (
     MemberOut,
@@ -31,6 +32,13 @@ async def list_organizations(user: CurrentUser, db: DbSession) -> list[Organizat
     memberships = await TenantService(db).list_organizations(user)
     await db.commit()
     return [to_organization_out(m) for m in memberships]
+
+
+@router.get("/current")
+async def current_organization(tenant: CurrentTenant, db: DbSession) -> OrganizationOut:
+    """Resolve the active organization from the X-Org-Id header."""
+    membership = await TenantService(db).get_membership_for(tenant.organization_id, tenant.user_id)
+    return to_organization_out(membership)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

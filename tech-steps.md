@@ -103,7 +103,7 @@ Decision: **Better Auth** in the Next.js app (Postgres-backed), FastAPI validate
 **Acceptance criteria**
 - A `member` cannot manage members; an `owner` cannot be removed by an `admin`. Tests cover the role matrix.
 
-### [ ] SGS-013 — Tenant scoping layer (1d)
+### [x] SGS-013 — Tenant scoping layer (1d)
 **Depends on:** SGS-012
 - `CurrentTenant` dependency: resolves the active org from the `X-Org-Id` header, verifies membership.
 - Repository base class that **always** filters by `tenant_id` — domain code cannot forget the filter (constructor takes the tenant, query builders inject it).

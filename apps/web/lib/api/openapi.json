@@ -142,6 +142,56 @@
         }
       }
     },
+    "/organizations/current": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Current Organization",
+        "description": "Resolve the active organization from the X-Org-Id header.",
+        "operationId": "current_organization_organizations_current_get",
+        "parameters": [
+          {
+            "name": "X-Org-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Org-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/organizations/{organization_id}": {
       "patch": {
         "tags": [

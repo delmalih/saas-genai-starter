@@ -17,6 +17,7 @@ if config.config_file_name is not None:
 config.set_main_option("sqlalchemy.url", get_settings().database_url)
 
 # Import all model modules here so autogenerate sees every table.
+import src.domains.chat.models  # noqa: E402
 import src.domains.tenants.models  # noqa: E402, F401
 
 target_metadata = Base.metadata

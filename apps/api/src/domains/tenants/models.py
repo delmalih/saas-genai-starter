@@ -19,8 +19,10 @@ class Organization(Base):
     name: Mapped[str] = mapped_column(String(120))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
+    # lazy="raise": in an async codebase, implicit lazy loading either breaks
+    # (MissingGreenlet) or hides N+1s — force explicit eager loading instead.
     memberships: Mapped[list["Membership"]] = relationship(
-        back_populates="organization", cascade="all, delete-orphan"
+        back_populates="organization", cascade="all, delete-orphan", lazy="raise"
     )
 
 
@@ -37,6 +39,6 @@ class Membership(Base):
     role: Mapped[str] = mapped_column(String(16), default=ROLE_MEMBER)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    organization: Mapped[Organization] = relationship(back_populates="memberships")
+    organization: Mapped[Organization] = relationship(back_populates="memberships", lazy="raise")
 
     __table_args__ = (UniqueConstraint("organization_id", "user_id"),)
