@@ -111,7 +111,7 @@ Decision: **Better Auth** in the Next.js app (Postgres-backed), FastAPI validate
 **Acceptance criteria**
 - A dedicated cross-tenant test proves user A can never read tenant B's rows through any repository method.
 
-### [ ] SGS-014 — Team invitations (1d)
+### [x] SGS-014 — Team invitations (1d)
 **Depends on:** SGS-012
 - Invite by email: single-use token (7-day expiry), accept page handling both existing users and new signups.
 - Email delivery behind an interface: console/log driver in dev, Resend driver in prod (env-gated).
@@ -119,7 +119,7 @@ Decision: **Better Auth** in the Next.js app (Postgres-backed), FastAPI validate
 **Acceptance criteria**
 - Full invite → accept → membership flow tested; expired/revoked tokens are rejected.
 
-### [ ] SGS-015 — Settings & org switcher UI (1d)
+### [x] SGS-015 — Settings & org switcher UI (1d)
 **Depends on:** SGS-013, SGS-014
 - Org switcher in the sidebar (persists active org, sets `X-Org-Id` on API calls).
 - Settings pages: profile, organization (rename), members (list, roles, invite, remove).

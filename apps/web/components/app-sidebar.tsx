@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { OrgSwitcher } from "@/components/org-switcher";
 
 const navItems = [
   { href: "/chat", label: "Chat", icon: MessageSquareIcon },
@@ -22,11 +23,8 @@ export function AppSidebar() {
 
   return (
     <aside className="hidden w-56 shrink-0 border-r md:flex md:flex-col">
-      <div className="flex h-14 items-center border-b px-4">
-        {/* Org switcher lands here (SGS-015) */}
-        <Link href="/" className="truncate font-heading font-semibold">
-          saas-genai-starter
-        </Link>
+      <div className="flex h-14 items-center border-b px-2">
+        <OrgSwitcher />
       </div>
       <nav className="flex flex-1 flex-col gap-1 p-2">
         {navItems.map((item) => {

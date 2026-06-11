@@ -10,6 +10,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@tanstack/react-query':
+        specifier: ^5.101.0
+        version: 5.101.0(react@19.1.0)
       better-auth:
         specifier: ^1.6.16
         version: 1.6.16(next@15.5.19(@babel/core@7.29.7(supports-color@10.2.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(pg@8.21.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1495,6 +1498,14 @@ packages:
 
   '@tailwindcss/postcss@4.3.0':
     resolution: {integrity: sha512-Jm05Tjx+9yCLGv5qw1c+84Psds8MnyrEQYCB+FFk2lgGiUjlRqdxke4mVTuYrj2xnVZqKim2Apr5ySuQRYAw/w==}
+
+  '@tanstack/query-core@5.101.0':
+    resolution: {integrity: sha512-cQetA74EB+seWySv1TTKr828TnP0u39m6LykwDXIo84SNortpDkp30TMEjkqtYCNP9c40uT/iwl6MLiufEt0Ow==}
+
+  '@tanstack/react-query@5.101.0':
+    resolution: {integrity: sha512-rLlJXSpkqfizLWgkR5+eLeIk0MvTx/meEIR7LRjxic+qxiQP8zVjq7BqQkiCMNLQBlLfuOLqqr6KO5GtrDlmSg==}
+    peerDependencies:
+      react: ^18 || ^19
 
   '@ts-morph/common@0.27.0':
     resolution: {integrity: sha512-Wf29UqxWDpc+i61k3oIOzcUfQt79PIT9y/MWfAGlrkjg6lBC1hwDECLXPVJAhWjiGbfBCxZd65F/LIZF3+jeJQ==}
@@ -5329,6 +5340,13 @@ snapshots:
       '@tailwindcss/oxide': 4.3.0
       postcss: 8.5.15
       tailwindcss: 4.3.0
+
+  '@tanstack/query-core@5.101.0': {}
+
+  '@tanstack/react-query@5.101.0(react@19.1.0)':
+    dependencies:
+      '@tanstack/query-core': 5.101.0
+      react: 19.1.0
 
   '@ts-morph/common@0.27.0':
     dependencies:
