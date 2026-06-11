@@ -11,8 +11,12 @@ Terraform (GCP Cloud Run) · Vercel.
 
 ## Quickstart
 
+**Prerequisites**: Node >= 22, pnpm (`corepack enable pnpm`), [uv](https://docs.astral.sh/uv/),
+and a Docker runtime — Docker Desktop or [colima](https://github.com/abiosoft/colima)
+(`brew install colima docker-compose && colima start`).
+
 ```bash
-make setup   # install dependencies, create the local database
+make setup   # install dependencies, create local .env files
 make dev     # postgres + redis (docker), API on :8000, web on :3000
 ```
 

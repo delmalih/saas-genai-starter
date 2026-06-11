@@ -1,8 +1,10 @@
 .PHONY: setup dev dev-api dev-web test test-api test-web lint lint-api lint-web evals migrate makemigration generate-client
 
-setup: ## Install all dependencies
+setup: ## Install all dependencies and create local env files
 	pnpm install
 	cd apps/api && uv sync
+	test -f apps/api/.env || cp apps/api/.env.example apps/api/.env
+	test -f apps/web/.env || cp apps/web/.env.example apps/web/.env
 
 dev: ## Boot local infra + API + web
 	docker compose up -d --wait

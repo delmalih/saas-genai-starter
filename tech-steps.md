@@ -27,7 +27,7 @@ evals/     → eval harness + datasets
 - MIT `LICENSE`, `.gitignore`, `.editorconfig`, placeholder `README.md`.
 - Git repo initialized, first commit.
 
-### [ ] SGS-002 — Local dev environment (0.5d)
+### [x] SGS-002 — Local dev environment (0.5d)
 **Depends on:** SGS-001
 - `docker-compose.yml`: `postgres:16` with `pgvector` extension, `redis:7`.
 - `.env.example` for both apps, with comments for every variable (no real secrets, ever).
