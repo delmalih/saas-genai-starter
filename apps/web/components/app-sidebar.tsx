@@ -24,7 +24,7 @@ export function AppSidebar() {
     <aside className="hidden w-56 shrink-0 border-r md:flex md:flex-col">
       <div className="flex h-14 items-center border-b px-4">
         {/* Org switcher lands here (SGS-015) */}
-        <Link href="/" className="truncate font-semibold">
+        <Link href="/" className="truncate font-heading font-semibold">
           saas-genai-starter
         </Link>
       </div>
