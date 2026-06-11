@@ -80,7 +80,7 @@ evals/     → eval harness + datasets
 Goal: organizations with roles, every API query automatically tenant-scoped.
 Decision: **Better Auth** in the Next.js app (Postgres-backed), FastAPI validates its JWTs via JWKS.
 
-### [ ] SGS-010 — Better Auth setup (1d)
+### [x] SGS-010 — Better Auth setup (1d)
 **Depends on:** SGS-004
 - Better Auth in `apps/web`: email/password + Google OAuth, Postgres adapter (same DB, `auth` schema), JWT plugin enabled (JWKS endpoint exposed).
 - Login, signup, forgot-password pages; `(app)` route group gated by session middleware.

@@ -17,10 +17,10 @@ export default function MarketingLayout({
           <nav className="flex items-center gap-2">
             <ThemeToggle />
             <Button asChild variant="ghost">
-              <Link href="/chat">Sign in</Link>
+              <Link href="/login">Sign in</Link>
             </Button>
             <Button asChild>
-              <Link href="/chat">Get started</Link>
+              <Link href="/signup">Get started</Link>
             </Button>
           </nav>
         </div>
