@@ -14,12 +14,12 @@ jobs:
     name: Web — lint, typecheck, build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - run: corepack enable pnpm
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -61,8 +61,8 @@ jobs:
       run:
         working-directory: apps/api
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8
         with:
           enable-cache: true
       - run: uv sync --frozen
@@ -83,12 +83,12 @@ jobs:
       DATABASE_URL: postgresql+asyncpg://ci:ci@localhost:5432/ci
       REDIS_URL: redis://localhost:6379/0
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - run: corepack enable pnpm
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v8
         with:
           enable-cache: true
       - run: pnpm install --frozen-lockfile
