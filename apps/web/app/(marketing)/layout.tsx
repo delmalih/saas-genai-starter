@@ -11,7 +11,7 @@ export default function MarketingLayout({
     <div className="flex min-h-svh flex-col">
       <header className="border-b">
         <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
-          <Link href="/" className="font-semibold">
+          <Link href="/" className="font-heading font-semibold">
             saas-genai-starter
           </Link>
           <nav className="flex items-center gap-2">
@@ -30,7 +30,7 @@ export default function MarketingLayout({
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-6 text-sm text-muted-foreground">
           <span>MIT licensed</span>
           <a
-            href="https://github.com/davidelmalih/saas-genai-starter"
+            href="https://github.com/delmalih/saas-genai-starter"
             className="hover:text-foreground"
           >
             GitHub

@@ -1,6 +1,6 @@
 # saas-genai-starter
 
-[![CI](https://github.com/davidelmalih/saas-genai-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/davidelmalih/saas-genai-starter/actions/workflows/ci.yml)
+[![CI](https://github.com/delmalih/saas-genai-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/delmalih/saas-genai-starter/actions/workflows/ci.yml)
 
 > **Work in progress** — not ready for use yet.
 

@@ -29,7 +29,7 @@ export default function MarketingPage() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4">
       <section className="flex flex-col items-center gap-6 py-24 text-center">
-        <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
+        <h1 className="max-w-3xl font-heading text-4xl font-bold tracking-tight sm:text-5xl">
           The production-grade starter for GenAI products
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground">
@@ -41,7 +41,7 @@ export default function MarketingPage() {
             <Link href="/chat">Open the demo app</Link>
           </Button>
           <Button asChild size="lg" variant="outline">
-            <a href="https://github.com/davidelmalih/saas-genai-starter">
+            <a href="https://github.com/delmalih/saas-genai-starter">
               Star on GitHub
             </a>
           </Button>
