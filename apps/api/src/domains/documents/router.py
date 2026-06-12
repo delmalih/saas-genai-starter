@@ -64,17 +64,20 @@ async def upload_document(
         raise ApiError(400, "bad_request", "Empty file")
 
     name = (file.filename or "document")[:255]
+    # The id is generated here so storage_path is final at construction —
+    # mutating it after flush would be silently discarded by db.refresh().
+    document_id = uuid.uuid4()
     document = DocumentRepository(db, tenant).add(
         Document(
+            id=document_id,
             name=name,
             mime_type=mime_type,
             size_bytes=len(data),
             created_by=tenant.user_id,
-            storage_path="",
+            storage_path=f"{tenant.organization_id}/{document_id}/{name}",
         )
     )
     await db.flush()
-    document.storage_path = f"{tenant.organization_id}/{document.id}/{name}"
     await storage.save(document.storage_path, data)
     await db.refresh(document)
     response = _out(document)

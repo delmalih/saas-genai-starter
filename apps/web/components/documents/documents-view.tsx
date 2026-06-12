@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileTextIcon, Loader2Icon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useRef, useState } from "react";
-import { api } from "@/lib/api/client";
+import { api, errorMessage } from "@/lib/api/client";
 import { uploadDocument } from "@/lib/api/upload";
 import { useOrg } from "@/components/org-provider";
 import { Button } from "@/components/ui/button";
@@ -73,11 +73,18 @@ export function DocumentsView() {
 
   const remove = useMutation({
     mutationFn: async (documentId: string) => {
-      await api.DELETE("/documents/{document_id}", {
+      const { response, error: body } = await api.DELETE("/documents/{document_id}", {
         params: { path: { document_id: documentId } },
       });
+      if (!response.ok) {
+        throw new Error(errorMessage(body, `Delete failed (${response.status})`));
+      }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["documents", orgId] }),
+    onSuccess: () => {
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ["documents", orgId] });
+    },
+    onError: (removeError) => setError(removeError.message),
   });
 
   return (

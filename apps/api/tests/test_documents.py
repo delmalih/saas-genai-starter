@@ -281,3 +281,35 @@ async def test_document_of_other_tenant_is_404(
 
     response = await client.get(f"/documents/{uuid.uuid4()}", headers=org_headers)
     assert response.status_code == 404
+
+
+async def test_upload_persists_storage_path_and_delete_works_end_to_end(
+    client: httpx.AsyncClient,
+    org_headers: dict[str, str],
+    overrides: None,
+    db_session: AsyncSession,
+    storage: LocalDiskStorage,
+) -> None:
+    """Regression: db.refresh() after a post-flush mutation silently reverted
+    storage_path to '' — files became undeletable (500 on DELETE)."""
+    response = await client.post(
+        "/documents",
+        files={"file": ("note.txt", io.BytesIO(b"hello"), "text/plain")},
+        headers=org_headers,
+    )
+    document_id = response.json()["id"]
+
+    row = (await db_session.execute(select(Document))).scalar_one()
+    assert row.storage_path == f"{org_headers['X-Org-Id']}/{document_id}/note.txt"
+
+    response = await client.delete(f"/documents/{document_id}", headers=org_headers)
+    assert response.status_code == 204
+    with pytest.raises(FileNotFoundError):
+        await storage.load(row.storage_path)
+
+
+async def test_storage_refuses_empty_and_root_paths(storage: LocalDiskStorage) -> None:
+    with pytest.raises(ValueError, match="Empty"):
+        await storage.delete("")
+    with pytest.raises(ValueError, match="storage root"):
+        await storage.delete(".")

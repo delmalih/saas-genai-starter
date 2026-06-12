@@ -19,8 +19,11 @@ class LocalDiskStorage:
         self._root = root
 
     def _resolve(self, path: str) -> Path:
+        if not path.strip():
+            raise ValueError("Empty storage path")
         resolved = (self._root / path).resolve()
-        if not resolved.is_relative_to(self._root.resolve()):
+        root = self._root.resolve()
+        if resolved == root or not resolved.is_relative_to(root):
             raise ValueError("Path escapes the storage root")
         return resolved
 
