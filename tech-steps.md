@@ -243,9 +243,53 @@ Goal: the demonstrator feature — full ingestion pipeline + cited retrieval in 
 
 ---
 
+## EPIC 7 — Bring-Your-Own-Key & Multi-Provider (priority: before the EPIC 4 deploy tickets)
+
+Goal: organizations choose their LLM provider + model and supply their own
+API keys from the UI — the hosted demo costs the maintainer $0 in LLM usage,
+and self-hosters aren't locked to one vendor. Strategy decision 2026-06-12.
+
+### [ ] SGS-070 — Org LLM settings + encrypted key storage (1d)
+**Depends on:** SGS-013
+- `org_llm_settings` (one row per org): chat_provider (`anthropic | openai`),
+  chat_model, embedding_provider (`voyage | openai`), API keys **encrypted at
+  rest** (Fernet, key from a new `SECRET_ENCRYPTION_KEY` env var).
+- Keys are write-only through the API: responses expose `is_set` + last 4
+  chars, never the value. Admin+ can update; member can read the masked view.
+- Fallback chain: org settings → env keys (self-host default) → 503.
+**Acceptance criteria**
+- Keys never appear in any API response, log line or trace; cross-tenant
+  test proves org A cannot use or read org B's keys.
+
+### [ ] SGS-071 — Multi-provider resolution (1d)
+**Depends on:** SGS-070, SGS-020
+- `OpenAIProvider` (chat + embeddings) implementing the existing protocols;
+  model allowlist per provider in code (with pricing table entries).
+- Factory becomes per-tenant: chat/embedding providers resolved from org
+  settings at request/job time (no global lru_cache); worker passes tenant.
+- A "test connection" endpoint validates a key with a 1-token call.
+**Acceptance criteria**
+- Same conversation flow works against both providers (fakes in tests);
+  usage rows carry the right model + cost for each provider's pricing.
+
+### [ ] SGS-072 — Provider settings UI (0.5d)
+**Depends on:** SGS-071, SGS-015
+- Settings page section "AI Provider": provider select, model select
+  (filtered by provider), key inputs with masked state, test-connection
+  button, clear error states. Chat shows a friendly prompt when no key is
+  configured anywhere.
+**Acceptance criteria**
+- A fresh org can paste a key, pick a model and chat within a minute.
+
+---
+
 ## EPIC 4 — Infra, Deploy & Observability
 
-Goal: one-command reproducible cloud environment; a public live demo.
+Goal: a reproducible cloud environment and a public live demo at **$0/month**
+(strategy decision 2026-06-12): Cloud Run free tier (scale to zero) + Neon
+Postgres free tier + Upstash Redis free tier + GCS always-free bucket +
+Vercel Hobby; LLM usage is BYO-key (EPIC 7). GCP still requires a billing
+account on file — set a low budget alert.
 
 ### [x] SGS-040 — API container & production hardening (0.5d)
 **Depends on:** SGS-003
@@ -253,22 +297,42 @@ Goal: one-command reproducible cloud environment; a public live demo.
 **Acceptance criteria**
 - `docker build` + run locally serves the API identically to dev.
 
-### [ ] SGS-041 — Terraform: GCP baseline (2d)
-**Depends on:** SGS-040
-- Modules under `infra/terraform/modules/`: `cloud-run` (API + ARQ worker as a second service), `cloud-sql` (Postgres 16 + pgvector flag), `secret-manager`, `artifact-registry`, `cloud-tasks` (queue + the `TaskQueue` adapter switch), `gcs` (documents bucket).
-- One `environments/demo/` composition; remote state in GCS; least-privilege service accounts.
+### [ ] SGS-041 — Terraform: $0 baseline (1.5d)
+**Depends on:** SGS-040, SGS-046
+- Modules under `infra/terraform/modules/`: `cloud-run` (API service,
+  scale-to-zero, within the always-free tier), `cloud-tasks` (ingestion
+  queue, OIDC push), `gcs` (documents bucket, always-free us region),
+  `secret-manager`, `artifact-registry`; WIF for CI.
+- Managed free-tier externals are NOT terraformed (keep the surface small):
+  Neon Postgres (DATABASE_URL) and Upstash Redis (REDIS_URL) provisioned
+  manually, wired through Secret Manager. Documented in `docs/deploy.md`.
+- One `environments/demo/` composition; remote state in GCS.
 **Acceptance criteria**
-- `terraform apply` from a clean GCP project yields a working API URL; `terraform destroy` is clean. A `docs/deploy-gcp.md` walkthrough covers it.
+- `terraform apply` from a clean GCP project yields a working API URL;
+  `terraform destroy` is clean. `docs/deploy.md` covers Neon/Upstash setup.
 
-### [ ] SGS-042 — Web deployment (Vercel) (0.5d)
+### [ ] SGS-046 — Cloud Tasks queue driver + push ingestion endpoint (1d)
+**Depends on:** SGS-031
+- `CloudTasksQueue` implementing `TaskQueue`: enqueue = HTTP push task
+  targeting `POST /internal/jobs/ingest` on the API service itself —
+  the separate always-on ARQ worker disappears in prod, so ingestion
+  scales to zero too. ARQ remains the local/default driver (`QUEUE_DRIVER`).
+- `/internal/jobs/*` endpoints verify the Cloud Tasks OIDC token (audience +
+  service account email); 403 otherwise. Retries via queue config (max 3).
+**Acceptance criteria**
+- Local tests cover the endpoint (valid/invalid OIDC, job execution);
+  driver switch is config-only.
+
+### [ ] SGS-042 — Web deployment (Vercel Hobby) (0.5d)
 **Depends on:** SGS-004
-- Vercel project config, env wiring (API URL, auth secrets), preview deployments on PRs.
+- Vercel project config (Hobby tier), env wiring (API URL, Better Auth
+  secrets, Neon pooled DATABASE_URL), preview deployments on PRs.
 **Acceptance criteria**
 - main → production deploy; PR → preview URL.
 
 ### [ ] SGS-043 — CD workflows (0.5d)
 **Depends on:** SGS-041, SGS-042, SGS-006
-- GitHub Actions: build/push API image → deploy Cloud Run on main (Workload Identity Federation, no JSON keys); migrations run as a release step before traffic switch.
+- GitHub Actions: build/push API image → deploy Cloud Run on main (Workload Identity Federation, no JSON keys); migrations run as a release step against Neon before traffic switch.
 **Acceptance criteria**
 - A merged PR reaches the demo environment with zero manual steps.
 
@@ -279,11 +343,14 @@ Goal: one-command reproducible cloud environment; a public live demo.
 **Acceptance criteria**
 - A single chat request produces one connected trace: HTTP → service → LLM call → DB writes.
 
-### [ ] SGS-045 — Public demo environment (1d)
-**Depends on:** SGS-043, SGS-034
-- Sandbox mode: demo tenant with seeded documents, aggressive rate limits, nightly reset job, banner in UI.
+### [ ] SGS-045 — Public demo environment (0.5d)
+**Depends on:** SGS-043, SGS-072
+- BYO-key demo: visitors sign up, paste their own provider key (EPIC 7) and
+  use the product — the maintainer pays no LLM cost. Landing + empty states
+  explain this. Aggressive platform rate limits stay on.
 **Acceptance criteria**
-- A stranger can try chat-with-documents on the live demo without signing up for anything beyond a sandbox login.
+- A stranger with an Anthropic or OpenAI key can sign up and chat with a
+  document on the live demo; nothing in the demo consumes maintainer keys.
 
 ---
 
@@ -343,13 +410,17 @@ Goal: one-command reproducible cloud environment; a public live demo.
 ## Suggested execution order
 
 ```
-Week 1:  SGS-001 → 006 (foundation), SGS-010 → 011
-Week 2:  SGS-012 → 015 (multi-tenancy), SGS-020 → 021
-Week 3:  SGS-022 → 026 (LLM layer + chat + usage)
-Week 4:  SGS-030 → 036 (RAG)
-Week 5:  SGS-040 → 045 (infra + demo)
-Week 6:  SGS-050 → 054 (evals + docs + launch)
+Week 1:  SGS-001 → 006 (foundation), SGS-010 → 011          [done]
+Week 2:  SGS-012 → 015 (multi-tenancy), SGS-020 → 021       [done]
+Week 3:  SGS-022 → 026 (LLM layer + chat + usage)           [done]
+Week 4:  SGS-030 → 036 (RAG), SGS-040 + 044 (container/otel)[done]
+Week 5:  SGS-070 → 072 (BYO keys, multi-provider)
+Week 6:  SGS-046, SGS-041 → 043, SGS-045 ($0 infra + demo)
+Week 7:  SGS-050 → 054 (evals + docs + launch)
 Post-launch: EPIC 6
 ```
 
-Total estimate: ~31 ideal dev-days (matches the 6-week part-time plan).
+Total estimate: ~34 ideal dev-days. Pivot 2026-06-12: BYO-key multi-provider
+(EPIC 7) added; infra retargeted to a $0/month stack — Cloud Run free tier +
+Cloud Tasks push (no always-on worker) + Neon Postgres + Upstash Redis + GCS
+always-free + Vercel Hobby; LLM costs carried by each org's own keys.
