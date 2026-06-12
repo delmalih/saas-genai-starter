@@ -14,9 +14,10 @@ from src.llm.catalog import (
     CHAT_PROVIDERS,
     EMBEDDING_PROVIDERS,
     PROVIDER_ANTHROPIC,
-    PROVIDER_OPENAI,
+    PROVIDER_COHERE,
     PROVIDER_VOYAGE,
 )
+from src.llm.cohere_provider import CohereEmbeddingProvider
 from src.llm.errors import ProviderNotConfigured
 from src.llm.openai_provider import OpenAIEmbeddingProvider, OpenAIProvider
 from src.llm.provider import ChatProvider, EmbeddingProvider
@@ -29,21 +30,16 @@ _chat_cache: dict[tuple[str, str, str], ChatProvider] = {}
 _embedding_cache: dict[tuple[str, str, str], EmbeddingProvider] = {}
 _CACHE_MAX = 256
 
-ENV_KEY_FALLBACKS = {
-    "anthropic_api_key": lambda: get_settings().anthropic_api_key,
-    "openai_api_key": lambda: get_settings().openai_api_key,
-    "voyage_api_key": lambda: get_settings().voyage_api_key,
-}
-
 
 def _key_fingerprint(api_key: str) -> str:
     return hashlib.sha256(api_key.encode()).hexdigest()[:16]
 
 
 def _resolve_key(org_settings: OrgLLMSettings, key_field: str) -> str | None:
-    """Org key first, server env key as the self-host fallback."""
+    """Org key first, server env key as the self-host fallback. Key fields in
+    the catalog match Settings attribute names by construction."""
     org_key = LLMSettingsService.decrypted_key(org_settings, key_field)
-    return org_key or ENV_KEY_FALLBACKS[key_field]()
+    return org_key or getattr(get_settings(), key_field, None)
 
 
 async def resolve_chat_provider(db: AsyncSession, tenant: TenantContext) -> ChatProvider:
@@ -65,10 +61,15 @@ async def resolve_chat_provider(db: AsyncSession, tenant: TenantContext) -> Chat
     inner: ChatProvider
     if provider_id == PROVIDER_ANTHROPIC:
         inner = AnthropicProvider(api_key, org_settings.chat_model, max_tokens)
-    elif provider_id == PROVIDER_OPENAI:
-        inner = OpenAIProvider(api_key, org_settings.chat_model, max_tokens)
     else:
-        raise ProviderNotConfigured(f"Unknown chat provider {provider_id!r}")
+        # Everything else in the catalog speaks the OpenAI chat API.
+        inner = OpenAIProvider(
+            api_key,
+            org_settings.chat_model,
+            max_tokens,
+            base_url=info.base_url or "https://api.openai.com/v1",
+            provider_name=info.label,
+        )
 
     provider = ResilientChatProvider(inner)
     if len(_chat_cache) >= _CACHE_MAX:
@@ -95,10 +96,18 @@ async def resolve_embedding_provider(db: AsyncSession, tenant: TenantContext) ->
     inner_embedder: EmbeddingProvider
     if provider_id == PROVIDER_VOYAGE:
         inner_embedder = VoyageEmbeddingProvider(api_key, info.model)
-    elif provider_id == PROVIDER_OPENAI:
-        inner_embedder = OpenAIEmbeddingProvider(api_key, info.model, info.dimensions)
+    elif provider_id == PROVIDER_COHERE:
+        inner_embedder = CohereEmbeddingProvider(api_key, info.model, info.dimensions)
     else:
-        raise ProviderNotConfigured(f"Unknown embedding provider {provider_id!r}")
+        # Everything else in the catalog speaks the OpenAI embeddings API.
+        inner_embedder = OpenAIEmbeddingProvider(
+            api_key,
+            info.model,
+            info.dimensions,
+            base_url=info.base_url or "https://api.openai.com/v1",
+            provider_name=info.label,
+            send_dimensions=info.send_dimensions,
+        )
     provider = ResilientEmbeddingProvider(inner_embedder)
 
     if len(_embedding_cache) >= _CACHE_MAX:

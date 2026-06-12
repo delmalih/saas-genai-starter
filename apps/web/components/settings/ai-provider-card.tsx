@@ -51,6 +51,13 @@ const KEY_LABELS: Record<string, string> = {
   anthropic_api_key: "Anthropic API key",
   openai_api_key: "OpenAI API key",
   voyage_api_key: "Voyage AI API key",
+  gemini_api_key: "Google Gemini API key",
+  mistral_api_key: "Mistral API key",
+  xai_api_key: "xAI API key",
+  deepseek_api_key: "DeepSeek API key",
+  groq_api_key: "Groq API key",
+  openrouter_api_key: "OpenRouter API key",
+  cohere_api_key: "Cohere API key",
 };
 
 function KeyInput({

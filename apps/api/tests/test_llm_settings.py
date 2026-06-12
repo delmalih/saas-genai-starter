@@ -143,5 +143,20 @@ async def test_catalog_lists_providers(
     response = await client.get("/llm-settings/catalog", headers=owner_headers)
     assert response.status_code == 200
     body = response.json()
-    assert {p["id"] for p in body["chat_providers"]} == {"anthropic", "openai"}
-    assert {p["id"] for p in body["embedding_providers"]} == {"voyage", "openai"}
+    assert {p["id"] for p in body["chat_providers"]} == {
+        "anthropic",
+        "openai",
+        "gemini",
+        "mistral",
+        "xai",
+        "deepseek",
+        "groq",
+        "openrouter",
+    }
+    assert {p["id"] for p in body["embedding_providers"]} == {
+        "voyage",
+        "openai",
+        "gemini",
+        "mistral",
+        "cohere",
+    }

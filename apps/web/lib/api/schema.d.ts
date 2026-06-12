@@ -791,14 +791,14 @@ export interface components {
              * Chat Provider
              * @enum {string}
              */
-            chat_provider: "anthropic" | "openai";
+            chat_provider: "anthropic" | "openai" | "gemini" | "mistral" | "xai" | "deepseek" | "groq" | "openrouter";
             /** Chat Model */
             chat_model: string;
             /**
              * Embedding Provider
              * @enum {string}
              */
-            embedding_provider: "voyage" | "openai";
+            embedding_provider: "voyage" | "openai" | "gemini" | "mistral" | "cohere";
             /** Keys */
             keys: {
                 [key: string]: components["schemas"]["KeyState"];
@@ -810,17 +810,31 @@ export interface components {
          */
         LLMSettingsUpdate: {
             /** Chat Provider */
-            chat_provider?: ("anthropic" | "openai") | null;
+            chat_provider?: ("anthropic" | "openai" | "gemini" | "mistral" | "xai" | "deepseek" | "groq" | "openrouter") | null;
             /** Chat Model */
             chat_model?: string | null;
             /** Embedding Provider */
-            embedding_provider?: ("voyage" | "openai") | null;
+            embedding_provider?: ("voyage" | "openai" | "gemini" | "mistral" | "cohere") | null;
             /** Anthropic Api Key */
             anthropic_api_key?: string | null;
             /** Openai Api Key */
             openai_api_key?: string | null;
             /** Voyage Api Key */
             voyage_api_key?: string | null;
+            /** Gemini Api Key */
+            gemini_api_key?: string | null;
+            /** Mistral Api Key */
+            mistral_api_key?: string | null;
+            /** Xai Api Key */
+            xai_api_key?: string | null;
+            /** Deepseek Api Key */
+            deepseek_api_key?: string | null;
+            /** Groq Api Key */
+            groq_api_key?: string | null;
+            /** Openrouter Api Key */
+            openrouter_api_key?: string | null;
+            /** Cohere Api Key */
+            cohere_api_key?: string | null;
         };
         /**
          * LimitsUpdate

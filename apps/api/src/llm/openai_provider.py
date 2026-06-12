@@ -32,15 +32,15 @@ _FINISH_REASONS = {
 }
 
 
-def _map_status(status: int, body: str, headers: httpx.Headers) -> Exception:
+def _map_status(status: int, body: str, headers: httpx.Headers, provider: str) -> Exception:
     if status == 429:
         retry_after = headers.get("retry-after")
         return RateLimited(retry_after=float(retry_after) if retry_after else None)
     if status >= 500:
-        return ProviderUnavailable(f"OpenAI returned {status}")
+        return ProviderUnavailable(f"{provider} returned {status}")
     if "context_length" in body or "maximum context length" in body:
         return ContextTooLong(body[:500])
-    return ProviderBadRequest(f"OpenAI returned {status}: {body[:500]}")
+    return ProviderBadRequest(f"{provider} returned {status}: {body[:500]}")
 
 
 def _map_usage(usage: dict[str, Any]) -> Usage:
@@ -93,7 +93,8 @@ def _translate_messages(messages: list[Message], system: str | None) -> list[dic
 
 
 class OpenAIProvider:
-    """OpenAI chat provider over plain httpx — same protocols as Anthropic."""
+    """Chat provider for OpenAI and any OpenAI-compatible API (Gemini compat
+    endpoint, Mistral, xAI, DeepSeek, Groq, OpenRouter…) — pass base_url."""
 
     def __init__(
         self,
@@ -101,11 +102,15 @@ class OpenAIProvider:
         model: str,
         default_max_tokens: int = 4096,
         transport: httpx.AsyncBaseTransport | None = None,
+        base_url: str = OPENAI_API_URL,
+        provider_name: str = "OpenAI",
     ):
         self._api_key = api_key
         self._model = model
         self._default_max_tokens = default_max_tokens
         self._transport = transport
+        self._base_url = base_url.rstrip("/")
+        self._provider_name = provider_name
 
     def _client(self) -> httpx.AsyncClient:
         return httpx.AsyncClient(
@@ -157,13 +162,15 @@ class OpenAIProvider:
         async with self._client() as client:
             try:
                 response = await client.post(
-                    f"{OPENAI_API_URL}/chat/completions",
+                    f"{self._base_url}/chat/completions",
                     json=self._payload(messages, system, tools, json_schema, max_tokens),
                 )
             except httpx.HTTPError as exc:
                 raise ProviderUnavailable(str(exc)) from exc
         if response.status_code >= 400:
-            raise _map_status(response.status_code, response.text, response.headers)
+            raise _map_status(
+                response.status_code, response.text, response.headers, self._provider_name
+            )
 
         data = response.json()
         choice = data["choices"][0]
@@ -203,11 +210,13 @@ class OpenAIProvider:
         async with self._client() as client:
             try:
                 async with client.stream(
-                    "POST", f"{OPENAI_API_URL}/chat/completions", json=payload
+                    "POST", f"{self._base_url}/chat/completions", json=payload
                 ) as response:
                     if response.status_code >= 400:
                         body = (await response.aread()).decode()
-                        raise _map_status(response.status_code, body, response.headers)
+                        raise _map_status(
+                            response.status_code, body, response.headers, self._provider_name
+                        )
                     async for line in response.aiter_lines():
                         if not line.startswith("data: "):
                             continue
@@ -258,38 +267,49 @@ class OpenAIProvider:
 
 
 class OpenAIEmbeddingProvider:
+    """Embeddings for OpenAI and OpenAI-compatible APIs. Some compatible
+    models are fixed-size and reject `dimensions` — set send_dimensions=False
+    (the catalog still pins them to the schema's vector size)."""
+
     def __init__(
         self,
         api_key: str,
         model: str,
         dimensions: int = 1024,
         transport: httpx.AsyncBaseTransport | None = None,
+        base_url: str = OPENAI_API_URL,
+        provider_name: str = "OpenAI",
+        send_dimensions: bool = True,
     ):
         self._api_key = api_key
         self._model = model
         self._dimensions = dimensions
         self._transport = transport
+        self._base_url = base_url.rstrip("/")
+        self._provider_name = provider_name
+        self._send_dimensions = send_dimensions
 
     async def embed(
         self,
         texts: list[str],
         input_type: str = "document",  # OpenAI has no query/document distinction
     ) -> EmbeddingResult:
+        payload: dict[str, Any] = {"model": self._model, "input": texts}
+        if self._send_dimensions:
+            payload["dimensions"] = self._dimensions
         async with httpx.AsyncClient(timeout=30, transport=self._transport) as client:
             try:
                 response = await client.post(
-                    f"{OPENAI_API_URL}/embeddings",
+                    f"{self._base_url}/embeddings",
                     headers={"Authorization": f"Bearer {self._api_key}"},
-                    json={
-                        "model": self._model,
-                        "input": texts,
-                        "dimensions": self._dimensions,
-                    },
+                    json=payload,
                 )
             except httpx.HTTPError as exc:
                 raise ProviderUnavailable(str(exc)) from exc
         if response.status_code >= 400:
-            raise _map_status(response.status_code, response.text, response.headers)
+            raise _map_status(
+                response.status_code, response.text, response.headers, self._provider_name
+            )
         payload = response.json()
         ordered = sorted(payload["data"], key=lambda item: item["index"])
         return EmbeddingResult(

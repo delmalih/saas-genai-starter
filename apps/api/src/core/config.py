@@ -35,6 +35,13 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
     voyage_api_key: str | None = None
+    gemini_api_key: str | None = None
+    mistral_api_key: str | None = None
+    xai_api_key: str | None = None
+    deepseek_api_key: str | None = None
+    groq_api_key: str | None = None
+    openrouter_api_key: str | None = None
+    cohere_api_key: str | None = None
     llm_chat_model: str = "claude-sonnet-4-6"
     llm_embedding_model: str = "voyage-3.5"
     llm_max_output_tokens: int = 4096

@@ -25,9 +25,12 @@ Built with **Next.js 15 · FastAPI · PostgreSQL + pgvector · Claude / OpenAI**
   (email/password + Google), FastAPI validates its JWTs via JWKS. Roles
   (owner/admin/member), team invitations with single-use hashed tokens.
 - **Bring-your-own-key, multi-provider** — each organization picks its
-  provider (Anthropic or OpenAI), its model, and pastes its own API keys —
-  encrypted at rest (Fernet), write-only through the API, never logged.
-  Server-wide env keys remain as the self-host fallback.
+  provider (Anthropic, OpenAI, Google Gemini, Mistral, xAI, DeepSeek, Groq
+  or OpenRouter for chat; Voyage, OpenAI, Gemini, Mistral or Cohere for
+  embeddings), its model, and pastes its own API keys — encrypted at rest
+  (Fernet), write-only through the API, never logged. Server-wide env keys
+  remain as the self-host fallback, and OpenAI-compatible providers are a
+  [catalog entry away](docs/extending-llm-providers.md).
 - **LLM costs under control** — every call (chat, RAG, ingestion,
   extraction) writes a usage row: tokens (including cache reads), cost in
   USD from a versioned pricing table, latency, status. Usage survives

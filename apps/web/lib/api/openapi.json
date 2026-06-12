@@ -2462,7 +2462,13 @@
             "type": "string",
             "enum": [
               "anthropic",
-              "openai"
+              "openai",
+              "gemini",
+              "mistral",
+              "xai",
+              "deepseek",
+              "groq",
+              "openrouter"
             ],
             "title": "Chat Provider"
           },
@@ -2474,7 +2480,10 @@
             "type": "string",
             "enum": [
               "voyage",
-              "openai"
+              "openai",
+              "gemini",
+              "mistral",
+              "cohere"
             ],
             "title": "Embedding Provider"
           },
@@ -2503,7 +2512,13 @@
                 "type": "string",
                 "enum": [
                   "anthropic",
-                  "openai"
+                  "openai",
+                  "gemini",
+                  "mistral",
+                  "xai",
+                  "deepseek",
+                  "groq",
+                  "openrouter"
                 ]
               },
               {
@@ -2529,7 +2544,10 @@
                 "type": "string",
                 "enum": [
                   "voyage",
-                  "openai"
+                  "openai",
+                  "gemini",
+                  "mistral",
+                  "cohere"
                 ]
               },
               {
@@ -2573,6 +2591,90 @@
               }
             ],
             "title": "Voyage Api Key"
+          },
+          "gemini_api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gemini Api Key"
+          },
+          "mistral_api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mistral Api Key"
+          },
+          "xai_api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Xai Api Key"
+          },
+          "deepseek_api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deepseek Api Key"
+          },
+          "groq_api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Groq Api Key"
+          },
+          "openrouter_api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Openrouter Api Key"
+          },
+          "cohere_api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cohere Api Key"
           }
         },
         "type": "object",

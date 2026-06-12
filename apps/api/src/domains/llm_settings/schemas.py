@@ -2,8 +2,10 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-ChatProviderId = Literal["anthropic", "openai"]
-EmbeddingProviderId = Literal["voyage", "openai"]
+ChatProviderId = Literal[
+    "anthropic", "openai", "gemini", "mistral", "xai", "deepseek", "groq", "openrouter"
+]
+EmbeddingProviderId = Literal["voyage", "openai", "gemini", "mistral", "cohere"]
 
 
 class KeyState(BaseModel):
@@ -27,6 +29,13 @@ class LLMSettingsUpdate(BaseModel):
     anthropic_api_key: str | None = Field(default=None, max_length=512)
     openai_api_key: str | None = Field(default=None, max_length=512)
     voyage_api_key: str | None = Field(default=None, max_length=512)
+    gemini_api_key: str | None = Field(default=None, max_length=512)
+    mistral_api_key: str | None = Field(default=None, max_length=512)
+    xai_api_key: str | None = Field(default=None, max_length=512)
+    deepseek_api_key: str | None = Field(default=None, max_length=512)
+    groq_api_key: str | None = Field(default=None, max_length=512)
+    openrouter_api_key: str | None = Field(default=None, max_length=512)
+    cohere_api_key: str | None = Field(default=None, max_length=512)
 
 
 class ChatProviderOut(BaseModel):

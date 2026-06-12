@@ -425,7 +425,7 @@ A first-class goal is **agent-driven bootstrap**: a coding agent (Claude Code,
 Cursor…) pointed at this repo should be able to turn it into a named, branded,
 domain-adapted product from a handful of parameters.
 
-### [ ] SGS-080 — Additional LLM providers (2d)
+### [x] SGS-080 — Additional LLM providers (2d)
 **Depends on:** SGS-071
 - Extend the `ChatProvider`/`EmbeddingProvider` registry beyond Anthropic and
   OpenAI, keeping Anthropic-shaped content blocks as the lingua franca. Most
@@ -443,6 +443,12 @@ domain-adapted product from a handful of parameters.
 **Acceptance criteria**
 - An org can select any new provider + model from settings with its own key and
   run the full RAG chat; `docs/extending-llm-providers.md` stays accurate.
+
+> Shipped 2026-06: Gemini, Mistral, xAI, DeepSeek, Groq, OpenRouter (chat) +
+> Gemini, Mistral, Cohere (embeddings). Remaining from the wishlist —
+> Together/Fireworks (one catalog entry each, see the docs "fast path") and
+> Ollama (needs a per-org base-URL setting since the server must reach the
+> user's instance).
 
 ### [ ] SGS-081 — SSO logins: Google, GitHub, Apple (1d)
 **Depends on:** SGS-010

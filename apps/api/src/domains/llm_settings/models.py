@@ -21,6 +21,13 @@ class OrgLLMSettings(TenantOwnedMixin, Base):
     anthropic_api_key_encrypted: Mapped[str | None] = mapped_column(Text)
     openai_api_key_encrypted: Mapped[str | None] = mapped_column(Text)
     voyage_api_key_encrypted: Mapped[str | None] = mapped_column(Text)
+    gemini_api_key_encrypted: Mapped[str | None] = mapped_column(Text)
+    mistral_api_key_encrypted: Mapped[str | None] = mapped_column(Text)
+    xai_api_key_encrypted: Mapped[str | None] = mapped_column(Text)
+    deepseek_api_key_encrypted: Mapped[str | None] = mapped_column(Text)
+    groq_api_key_encrypted: Mapped[str | None] = mapped_column(Text)
+    openrouter_api_key_encrypted: Mapped[str | None] = mapped_column(Text)
+    cohere_api_key_encrypted: Mapped[str | None] = mapped_column(Text)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
