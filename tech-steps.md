@@ -297,7 +297,7 @@ account on file — set a low budget alert.
 **Acceptance criteria**
 - `docker build` + run locally serves the API identically to dev.
 
-### [ ] SGS-041 — Terraform: $0 baseline (1.5d)
+### [x] SGS-041 — Terraform: $0 baseline (1.5d)
 **Depends on:** SGS-040, SGS-046
 - Modules under `infra/terraform/modules/`: `cloud-run` (API service,
   scale-to-zero, within the always-free tier), `cloud-tasks` (ingestion
@@ -330,7 +330,7 @@ account on file — set a low budget alert.
 **Acceptance criteria**
 - main → production deploy; PR → preview URL.
 
-### [ ] SGS-043 — CD workflows (0.5d)
+### [x] SGS-043 — CD workflows (0.5d)
 **Depends on:** SGS-041, SGS-042, SGS-006
 - GitHub Actions: build/push API image → deploy Cloud Run on main (Workload Identity Federation, no JSON keys); migrations run as a release step against Neon before traffic switch.
 **Acceptance criteria**
