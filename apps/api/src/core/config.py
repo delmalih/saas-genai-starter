@@ -56,8 +56,10 @@ class Settings(BaseSettings):
             email.strip().lower() for email in self.admin_emails.split(",") if email.strip()
         )
 
-    # Document storage (local disk path in dev; GCS in production).
+    # Document storage: "local" (disk path below) | "gcs" (bucket below).
+    storage_backend: Literal["local", "gcs"] = "local"
     storage_dir: str = "./storage"
+    gcs_bucket: str | None = None
     max_upload_bytes: int = 20 * 1024 * 1024
     # Tracing — spans export to OTEL_EXPORTER_OTLP_ENDPOINT when set,
     # to the console otherwise.

@@ -1,7 +1,7 @@
 import asyncio
 from functools import lru_cache
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 from src.core.config import get_settings
 
@@ -40,6 +40,45 @@ class LocalDiskStorage:
         await asyncio.to_thread(target.unlink, True)
 
 
+class GCSStorage:
+    """Google Cloud Storage driver — production. Auth via ADC (the Cloud Run
+    runtime service account)."""
+
+    def __init__(self, bucket_name: str):
+        self._bucket_name = bucket_name
+        self._bucket: Any = None
+
+    def _get_bucket(self) -> Any:
+        if self._bucket is None:
+            import google.cloud.storage as gcs
+
+            self._bucket = gcs.Client().bucket(self._bucket_name)
+        return self._bucket
+
+    async def save(self, path: str, data: bytes) -> None:
+        blob = self._get_bucket().blob(path)
+        await asyncio.to_thread(blob.upload_from_string, data)
+
+    async def load(self, path: str) -> bytes:
+        blob = self._get_bucket().blob(path)
+        data = await asyncio.to_thread(blob.download_as_bytes)
+        return bytes(data)
+
+    async def delete(self, path: str) -> None:
+        from google.cloud.exceptions import NotFound as GCSNotFound
+
+        blob = self._get_bucket().blob(path)
+        try:
+            await asyncio.to_thread(blob.delete)
+        except GCSNotFound:
+            pass  # same semantics as LocalDiskStorage missing_ok
+
+
 @lru_cache
 def get_storage() -> BlobStorage:
-    return LocalDiskStorage(Path(get_settings().storage_dir))
+    settings = get_settings()
+    if settings.storage_backend == "gcs":
+        if not settings.gcs_bucket:
+            raise RuntimeError("STORAGE_BACKEND=gcs requires GCS_BUCKET")
+        return GCSStorage(settings.gcs_bucket)
+    return LocalDiskStorage(Path(settings.storage_dir))
