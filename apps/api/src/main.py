@@ -13,6 +13,7 @@ from src.core.telemetry import setup_telemetry
 from src.domains.admin.router import router as admin_router
 from src.domains.chat.router import router as chat_router
 from src.domains.documents.router import router as documents_router
+from src.domains.jobs.router import router as jobs_router
 from src.domains.llm_settings.router import router as llm_settings_router
 from src.domains.tenants.router import invitations_router
 from src.domains.tenants.router import router as tenants_router
@@ -60,6 +61,7 @@ def create_app() -> FastAPI:
     app.include_router(documents_router)
     app.include_router(llm_settings_router)
     app.include_router(admin_router)
+    app.include_router(jobs_router)
     setup_telemetry(app)
     return app
 

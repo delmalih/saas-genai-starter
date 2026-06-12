@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     rate_limit_tokens_per_day: int = 500_000
     # Comma-separated emails with access to the platform admin panel.
     admin_emails: str = ""
+    # Background jobs: "arq" polls Redis (local/default); "cloud_tasks"
+    # pushes HTTP tasks to /internal/jobs/* (production, scale-to-zero).
+    queue_driver: Literal["arq", "cloud_tasks"] = "arq"
+    cloud_tasks_queue: str | None = None  # projects/P/locations/L/queues/Q
+    internal_jobs_base_url: str | None = None  # this API's public URL
+    jobs_service_account_email: str | None = None  # OIDC identity of the queue
 
     @property
     def admin_email_set(self) -> frozenset[str]:

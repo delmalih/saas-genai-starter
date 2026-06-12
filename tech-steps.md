@@ -311,7 +311,7 @@ account on file — set a low budget alert.
 - `terraform apply` from a clean GCP project yields a working API URL;
   `terraform destroy` is clean. `docs/deploy.md` covers Neon/Upstash setup.
 
-### [ ] SGS-046 — Cloud Tasks queue driver + push ingestion endpoint (1d)
+### [x] SGS-046 — Cloud Tasks queue driver + push ingestion endpoint (1d)
 **Depends on:** SGS-031
 - `CloudTasksQueue` implementing `TaskQueue`: enqueue = HTTP push task
   targeting `POST /internal/jobs/ingest` on the API service itself —
