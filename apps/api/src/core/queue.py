@@ -56,10 +56,12 @@ class CloudTasksQueue:
                 "QUEUE_DRIVER=cloud_tasks requires CLOUD_TASKS_QUEUE, "
                 "INTERNAL_JOBS_BASE_URL and JOBS_SERVICE_ACCOUNT_EMAIL"
             )
+        from google.cloud import tasks_v2
+
         base_url = settings.internal_jobs_base_url.rstrip("/")
         task = {
             "http_request": {
-                "http_method": 4,  # tasks_v2.HttpMethod.POST
+                "http_method": tasks_v2.HttpMethod.POST,
                 "url": f"{base_url}/internal/jobs/{job_name}",
                 "headers": {"Content-Type": "application/json"},
                 "body": json.dumps(kwargs).encode(),

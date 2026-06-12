@@ -89,6 +89,9 @@ async def test_cloud_tasks_queue_builds_the_push_task(
 
     assert created[0]["parent"] == "projects/demo/locations/us-east1/queues/jobs"
     http_request = created[0]["task"]["http_request"]
+    # The numeric enum is a trap: POST is 1 (4 is PUT, which the endpoint
+    # rejects with a 405 and the task silently dies after its retries).
+    assert http_request["http_method"] == 1
     assert http_request["url"] == "https://api.demo.example/internal/jobs/ingest_document_job"
     assert json.loads(http_request["body"]) == PAYLOAD
     oidc = http_request["oidc_token"]
