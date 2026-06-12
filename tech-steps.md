@@ -356,14 +356,14 @@ account on file — set a low budget alert.
 
 ## EPIC 5 — Evals, Admin, Docs & Launch
 
-### [ ] SGS-050 — Eval harness (1d)
+### [x] SGS-050 — Eval harness (1d)
 **Depends on:** SGS-034
 - `evals/`: YAML dataset format (`question`, `expected_facts`, `source_document`), runner that executes the real RAG pipeline against a fixture corpus, LLM-as-judge scoring (faithfulness + citation correctness, 0–1).
 - `make evals` prints a score table and writes `evals/results/<git-sha>.json`.
 **Acceptance criteria**
 - Deterministic-ish runs (temperature 0, fixed judge prompt); a regression in retrieval visibly drops the score.
 
-### [ ] SGS-051 — Eval dataset & baseline (0.5d)
+### [x] SGS-051 — Eval dataset & baseline (0.5d)
 **Depends on:** SGS-050
 - 12–15 curated cases over 3 public-domain fixture documents, including negative cases ("the answer is not in the corpus" → expect refusal).
 - Baseline score committed and referenced in the README.

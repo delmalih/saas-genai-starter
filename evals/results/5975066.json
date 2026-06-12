@@ -1,0 +1,115 @@
+{
+  "git_sha": "5975066",
+  "agent_model": "claude-sonnet-4-6",
+  "judge_model": "claude-sonnet-4-6",
+  "overall": 0.963,
+  "faithfulness": 0.993,
+  "citation_correctness": 0.933,
+  "cases": [
+    {
+      "id": "vacation-days",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states 25 paid vacation days per year and cites the correct source document remote_work_policy.md."
+    },
+    {
+      "id": "core-hours",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states 10:00 to 16:00 CET Monday to Thursday and cites remote_work_policy.md; the extra coffee_brewing.md citation is irrelevant but does not negate the correct citation."
+    },
+    {
+      "id": "equipment-budget",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states \u20ac1,500 equipment budget refreshed every 3 years, matching the expected facts, and cites remote_work_policy.md."
+    },
+    {
+      "id": "lost-device",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states both expected facts (report and within 24 hours) and cites the correct source document remote_work_policy.md."
+    },
+    {
+      "id": "coworking",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states \u20ac250/month with receipt requirement, matching expected facts, and cites remote_work_policy.md."
+    },
+    {
+      "id": "largest-planet",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly identifies Jupiter as the largest planet and cites the expected source document solar_system.md."
+    },
+    {
+      "id": "hottest-planet",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states that Venus's dense carbon-dioxide atmosphere causes a greenhouse effect making it hotter than Mercury, matching the expected facts, and cites solar_system.md correctly."
+    },
+    {
+      "id": "tallest-volcano",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "Answer correctly states Olympus Mons at 22 km from solar_system.md with no fabrications."
+    },
+    {
+      "id": "most-moons",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states Saturn has the most confirmed moons with more than 140, matching the expected facts, and cites solar_system.md as the source."
+    },
+    {
+      "id": "pourover-ratio",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states the 1:15 ratio and cites coffee_brewing.md as the source."
+    },
+    {
+      "id": "espresso-pressure",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states 9 bars of pressure and cites coffee_brewing.md as the source."
+    },
+    {
+      "id": "cold-brew-time",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states 12 to 24 hours and cites coffee_brewing.md as the source, satisfying both criteria despite an extra irrelevant citation to remote_work_policy.md."
+    },
+    {
+      "id": "fridge-storage",
+      "faithfulness": 1.0,
+      "citation_correctness": 1.0,
+      "overall": 1.0,
+      "reasoning": "The answer correctly states not to store coffee in the fridge due to odor absorption, matching expected facts, and cites coffee_brewing.md as the source."
+    },
+    {
+      "id": "negative-ceo",
+      "faithfulness": 1.0,
+      "citation_correctness": 0.5,
+      "overall": 0.75,
+      "reasoning": "The answer correctly states the information is not available, but it cites a specific document (remote_work_policy.md) which could be seen as slightly misleading though it's used to explain why the answer can't be found rather than to support a fabricated claim."
+    },
+    {
+      "id": "negative-mars-population",
+      "faithfulness": 0.9,
+      "citation_correctness": 0.5,
+      "overall": 0.7,
+      "reasoning": "The answer correctly states the information is not in the corpus, but citing solar_system.md as a relevant document is mildly misleading since the expectation is that no citation should be needed; however, no fabricated claims are made about Mars population."
+    }
+  ]
+}

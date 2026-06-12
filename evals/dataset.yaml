@@ -1,0 +1,85 @@
+# RAG evaluation dataset.
+# Each case asks a question whose answer lives in exactly one fixture
+# document. `expected_facts` must appear (in substance) in a correct answer;
+# `source_document` is the file citations must point to.
+# Cases with `expect_no_answer: true` test refusal: the corpus does NOT
+# contain the answer and the system must say so without fabricating.
+
+documents:
+  - fixtures/remote_work_policy.md
+  - fixtures/solar_system.md
+  - fixtures/coffee_brewing.md
+
+cases:
+  - id: vacation-days
+    question: How many paid vacation days do full-time employees get per year?
+    expected_facts: ["25 days"]
+    source_document: remote_work_policy.md
+
+  - id: core-hours
+    question: What are the core working hours at Lumen Labs?
+    expected_facts: ["10:00 to 16:00 CET", "Monday to Thursday"]
+    source_document: remote_work_policy.md
+
+  - id: equipment-budget
+    question: What is the equipment budget for new employees and how often is it refreshed?
+    expected_facts: ["1,500 euros", "every 3 years"]
+    source_document: remote_work_policy.md
+
+  - id: lost-device
+    question: What must I do if my work laptop is stolen?
+    expected_facts: ["report", "within 24 hours"]
+    source_document: remote_work_policy.md
+
+  - id: coworking
+    question: How much of a co-working space subscription is reimbursed?
+    expected_facts: ["250 euros per month", "receipt"]
+    source_document: remote_work_policy.md
+
+  - id: largest-planet
+    question: Which planet is the largest in the solar system?
+    expected_facts: ["Jupiter"]
+    source_document: solar_system.md
+
+  - id: hottest-planet
+    question: Why is Venus hotter than Mercury?
+    expected_facts: ["dense carbon-dioxide atmosphere"]
+    source_document: solar_system.md
+
+  - id: tallest-volcano
+    question: What is the tallest volcano in the solar system and how high is it?
+    expected_facts: ["Olympus Mons", "22 kilometers"]
+    source_document: solar_system.md
+
+  - id: most-moons
+    question: Which planet has the most confirmed moons?
+    expected_facts: ["Saturn", "more than 140"]
+    source_document: solar_system.md
+
+  - id: pourover-ratio
+    question: What coffee-to-water ratio should I use for a V60?
+    expected_facts: ["1:15"]
+    source_document: coffee_brewing.md
+
+  - id: espresso-pressure
+    question: At what pressure is espresso brewed?
+    expected_facts: ["9 bars"]
+    source_document: coffee_brewing.md
+
+  - id: cold-brew-time
+    question: How long should cold brew steep?
+    expected_facts: ["12 to 24 hours"]
+    source_document: coffee_brewing.md
+
+  - id: fridge-storage
+    question: Should I store coffee beans in the fridge?
+    expected_facts: ["no", "absorbs odors"]
+    source_document: coffee_brewing.md
+
+  - id: negative-ceo
+    question: What is the name of Lumen Labs' CEO?
+    expect_no_answer: true
+
+  - id: negative-mars-population
+    question: According to the documents, how many people live on Mars?
+    expect_no_answer: true

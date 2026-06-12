@@ -169,10 +169,17 @@ async def test_rag_chat_with_citations(
     # Tools were offered to the model; tool results were sent back.
     assert provider.received[0]["tools"] is not None
     second_call_messages = provider.received[1]["messages"]
-    assert any(
-        isinstance(m.content, list) and any(b.get("type") == "tool_result" for b in m.content)
+    tool_results = [
+        block
         for m in second_call_messages
-    )
+        if isinstance(m.content, list)
+        for block in m.content
+        if block.get("type") == "tool_result"
+    ]
+    assert tool_results
+    # The model must receive the FULL chunk content, not the UI snippet —
+    # truncated tool results made the agent miss mid-document facts.
+    assert "25 days" in tool_results[0]["content"]
 
     # Assistant message persisted with citations; usage tagged rag.
     messages = (await db_session.execute(select(ChatMessage))).scalars().all()

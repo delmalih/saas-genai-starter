@@ -7,9 +7,9 @@ from typing import Any
 
 import structlog
 
-from src.llm.errors import CircuitOpen, LLMError
-from src.llm.provider import ChatProvider
-from src.llm.types import Completion, Message, StreamEvent, ToolDef
+from src.llm.errors import CircuitOpen, LLMError, RateLimited
+from src.llm.provider import ChatProvider, EmbeddingProvider
+from src.llm.types import Completion, EmbeddingResult, Message, StreamEvent, ToolDef
 
 logger = structlog.get_logger(__name__)
 
@@ -22,9 +22,13 @@ class RetryPolicy:
 
     def delay_for(self, attempt: int, retry_after: float | None) -> float:
         if retry_after is not None:
-            return min(retry_after, self.max_delay)
+            # The server knows its window best — honor it beyond max_delay,
+            # with a sanity cap of one minute.
+            return min(retry_after, 60.0)
         exponential = min(self.base_delay * (2**attempt), self.max_delay)
-        return random.uniform(0, exponential)  # noqa: S311 — jitter, not crypto
+        # Jitter between half and full backoff: spreads thundering herds
+        # without burning attempts on near-zero waits.
+        return random.uniform(exponential / 2, exponential)  # noqa: S311 — not crypto
 
 
 class CircuitBreaker:
@@ -82,7 +86,10 @@ async def call_with_retries[T](
         try:
             result = await fn()
         except LLMError as exc:
-            breaker.record_failure()
+            # Throttling is backpressure, not unavailability — it must not
+            # open the breaker; retry-after already paces us.
+            if not isinstance(exc, RateLimited):
+                breaker.record_failure()
             if not exc.retryable:
                 raise
             last_error = exc
@@ -144,7 +151,8 @@ class ResilientChatProvider:
                 self._breaker.record_success()
                 return
             except LLMError as exc:
-                self._breaker.record_failure()
+                if not isinstance(exc, RateLimited):
+                    self._breaker.record_failure()
                 if not exc.retryable or attempt == self._policy.max_attempts - 1:
                     raise
                 retry_after = getattr(exc, "retry_after", None)
@@ -157,3 +165,28 @@ class ResilientChatProvider:
             async for event in iterator:
                 yield event
             return
+
+
+class ResilientEmbeddingProvider:
+    """EmbeddingProvider decorator — same retry/breaker semantics as chat.
+    Embedding free tiers are aggressively rate-limited (Voyage: ~3 req/min),
+    so the default policy waits longer than the chat one."""
+
+    def __init__(
+        self,
+        inner: EmbeddingProvider,
+        policy: RetryPolicy | None = None,
+        breaker: CircuitBreaker | None = None,
+    ):
+        self._inner = inner
+        self._policy = policy or RetryPolicy(max_attempts=5, base_delay=4.0, max_delay=30.0)
+        self._breaker = breaker or CircuitBreaker()
+
+    async def embed(
+        self,
+        texts: list[str],
+        input_type: str = "document",
+    ) -> EmbeddingResult:
+        return await call_with_retries(
+            lambda: self._inner.embed(texts, input_type), self._policy, self._breaker
+        )

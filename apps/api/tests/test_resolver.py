@@ -89,11 +89,13 @@ async def test_openai_choice_builds_openai_providers(
     )
 
     from src.llm.openai_provider import OpenAIEmbeddingProvider
+    from src.llm.resilience import ResilientEmbeddingProvider
 
     chat = await resolve_chat_provider(db_session, tenant)
     embedder = await resolve_embedding_provider(db_session, tenant)
     assert chat is not None
-    assert isinstance(embedder, OpenAIEmbeddingProvider)
+    assert isinstance(embedder, ResilientEmbeddingProvider)
+    assert isinstance(embedder._inner, OpenAIEmbeddingProvider)
 
 
 async def test_orgs_do_not_share_each_others_keys(

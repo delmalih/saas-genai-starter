@@ -36,8 +36,8 @@ lint-web:
 	pnpm --filter web lint
 	pnpm --filter web exec tsc --noEmit
 
-evals: ## Run the RAG eval harness (requires API keys) — SGS-050
-	@echo "Not implemented yet (SGS-050)"
+evals: ## Run the RAG eval harness (requires ANTHROPIC_API_KEY + VOYAGE_API_KEY)
+	cd apps/api && PYTHONPATH=. uv run python ../../evals/runner.py $(ARGS)
 
 migrate: ## Apply database migrations
 	cd apps/api && uv run alembic upgrade head

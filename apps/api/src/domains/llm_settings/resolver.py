@@ -20,7 +20,7 @@ from src.llm.catalog import (
 from src.llm.errors import ProviderNotConfigured
 from src.llm.openai_provider import OpenAIEmbeddingProvider, OpenAIProvider
 from src.llm.provider import ChatProvider, EmbeddingProvider
-from src.llm.resilience import ResilientChatProvider
+from src.llm.resilience import ResilientChatProvider, ResilientEmbeddingProvider
 from src.llm.voyage_provider import VoyageEmbeddingProvider
 
 # Provider instances (and their circuit breakers) are reused across requests.
@@ -92,13 +92,14 @@ async def resolve_embedding_provider(db: AsyncSession, tenant: TenantContext) ->
     if cached is not None:
         return cached
 
-    provider: EmbeddingProvider
+    inner_embedder: EmbeddingProvider
     if provider_id == PROVIDER_VOYAGE:
-        provider = VoyageEmbeddingProvider(api_key, info.model)
+        inner_embedder = VoyageEmbeddingProvider(api_key, info.model)
     elif provider_id == PROVIDER_OPENAI:
-        provider = OpenAIEmbeddingProvider(api_key, info.model, info.dimensions)
+        inner_embedder = OpenAIEmbeddingProvider(api_key, info.model, info.dimensions)
     else:
         raise ProviderNotConfigured(f"Unknown embedding provider {provider_id!r}")
+    provider = ResilientEmbeddingProvider(inner_embedder)
 
     if len(_embedding_cache) >= _CACHE_MAX:
         _embedding_cache.clear()

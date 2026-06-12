@@ -92,3 +92,17 @@ async def test_retry_respects_retry_after() -> None:
     assert policy.delay_for(0, retry_after=0.001) == 0.001
     # Without retry-after, delay is jittered within the exponential bound.
     assert 0 <= policy.delay_for(1, retry_after=None) <= 10.0
+
+
+async def test_rate_limits_do_not_open_the_breaker() -> None:
+    """429s are backpressure, not unavailability — breaker stays closed."""
+    breaker = CircuitBreaker(failure_threshold=2, recovery_seconds=30)
+    fake = FakeChatProvider(errors=[RateLimited(retry_after=0.001)] * 5)
+    provider = ResilientChatProvider(
+        fake, policy=RetryPolicy(max_attempts=6, base_delay=0.001), breaker=breaker
+    )
+
+    completion = await provider.complete(USER_MESSAGE)
+    assert completion.text == "ok"
+    # Far more than failure_threshold 429s happened, yet the breaker is closed.
+    await provider.complete(USER_MESSAGE)

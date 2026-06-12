@@ -19,7 +19,8 @@ class Citation:
     document_id: uuid.UUID
     document_name: str
     page: int | None
-    snippet: str
+    snippet: str  # truncated, for UI display
+    content: str  # full chunk text, for the model
     score: float
 
 
@@ -62,6 +63,7 @@ class RetrievalService:
                 document_name=name,
                 page=chunk.page,
                 snippet=chunk.content[:SNIPPET_MAX_CHARS],
+                content=chunk.content,
                 score=round(1.0 - dist, 4),
             )
             for chunk, name, dist in rows

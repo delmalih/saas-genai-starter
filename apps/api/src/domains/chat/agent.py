@@ -20,13 +20,17 @@ from src.llm.types import Completion, Message, StreamEnd, TextDelta, ToolCall, T
 logger = structlog.get_logger(__name__)
 
 MAX_TOOL_ROUNDS = 4
+# Results below this cosine-similarity score are context for the model but
+# not surfaced as user-facing citations.
+CITATION_MIN_SCORE = 0.3
 
 SEARCH_TOOL = ToolDef(
     name="search_documents",
     description=(
-        "Search the workspace's uploaded documents. Call this whenever the "
-        "user asks about their documents, or about facts that may be stored "
-        "in them, before answering from memory."
+        "Search the workspace's uploaded documents. You MUST call this before "
+        "answering any factual question — even when you believe you know the "
+        "answer — so the answer can be grounded in and cited from the "
+        "workspace's own documents."
     ),
     input_schema={
         "type": "object",
@@ -46,9 +50,11 @@ STATS_TOOL = ToolDef(
 
 # Stable suffix — part of the cacheable prefix, never interpolate into it.
 RAG_SYSTEM_PROMPT = (
-    SYSTEM_PROMPT + "\n\nYou can search the user's uploaded documents with the "
-    "search_documents tool. Ground document-related answers in the retrieved "
-    "snippets and mention which document they come from."
+    SYSTEM_PROMPT + "\n\nThis workspace has uploaded documents. For any factual "
+    "question, call search_documents BEFORE answering — even if you already "
+    "know the answer — and ground your reply in the retrieved content, naming "
+    "the source document. If the documents do not contain the answer, say so "
+    "plainly; do not fill the gap with outside knowledge."
 )
 
 
@@ -75,6 +81,10 @@ class AgentToolbox:
             return "Empty query."
         results = await self._retrieval.search(query, created_by=self._tenant.user_id)
         for citation in results:
+            # Low-score hits stay visible to the model but are not presented
+            # to the user as sources.
+            if citation.score < CITATION_MIN_SCORE:
+                continue
             if not any(
                 c.document_id == citation.document_id
                 and c.page == citation.page
@@ -84,12 +94,13 @@ class AgentToolbox:
                 self.citations.append(citation)
         if not results:
             return "No matching content found in the documents."
+        # The model gets the FULL chunk content — snippets are for the UI.
         return json.dumps(
             [
                 {
                     "document": c.document_name,
                     "page": c.page,
-                    "snippet": c.snippet,
+                    "content": c.content,
                     "score": c.score,
                 }
                 for c in results
