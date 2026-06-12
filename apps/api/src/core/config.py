@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     # Per-tenant limits on LLM-consuming endpoints.
     rate_limit_requests_per_minute: int = 30
     rate_limit_tokens_per_day: int = 500_000
+    # Document storage (local disk path in dev; GCS in production).
+    storage_dir: str = "./storage"
+    max_upload_bytes: int = 20 * 1024 * 1024
 
     @property
     def is_production(self) -> bool:

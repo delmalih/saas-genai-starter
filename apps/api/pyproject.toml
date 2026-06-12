@@ -6,12 +6,16 @@ requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.18.4",
     "anthropic>=0.109.1",
+    "arq>=0.25.0",
     "asyncpg>=0.31.0",
     "email-validator>=2.3.0",
     "fastapi>=0.136.3",
     "httpx>=0.28.1",
+    "pgvector>=0.4.2",
     "pydantic-settings>=2.14.1",
     "pyjwt[crypto]>=2.13.0",
+    "pymupdf>=1.27.2.3",
+    "python-multipart>=0.0.32",
     "redis>=8.0.0",
     "sqlalchemy[asyncio]>=2.0.50",
     "structlog>=26.1.0",
@@ -53,6 +57,17 @@ python_version = "3.12"
 strict = true
 mypy_path = "src"
 packages = ["src"]
+
+[[tool.mypy.overrides]]
+# No stubs / partial typing in these third-party packages.
+module = ["pgvector.*", "pymupdf"]
+ignore_missing_imports = true
+follow_untyped_imports = true
+
+[[tool.mypy.overrides]]
+# pymupdf and pgvector expose untyped callables.
+module = ["src.domains.documents.parsing", "src.domains.documents.models"]
+disallow_untyped_calls = false
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

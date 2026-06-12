@@ -82,6 +82,7 @@ async def db_session() -> AsyncIterator[AsyncSession]:
         transaction = await connection.begin()
         # Mirror the production shape of the Better Auth schema (read-only
         # lookups in repositories) without running the auth service.
+        await connection.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS vector")
         await connection.exec_driver_sql("CREATE SCHEMA IF NOT EXISTS auth")
         await connection.exec_driver_sql(
             'CREATE TABLE IF NOT EXISTS auth."user" (id text PRIMARY KEY, email text, name text)'

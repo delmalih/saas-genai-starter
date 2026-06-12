@@ -16,6 +16,9 @@ dev-api:
 dev-web:
 	pnpm --filter web dev
 
+worker: ## Run the ARQ background worker (document ingestion)
+	cd apps/api && uv run arq src.worker.WorkerSettings
+
 test: test-api test-web
 
 test-api:

@@ -191,21 +191,21 @@ resilience, rate limiting. This epic is the core value of the repo.
 
 Goal: the demonstrator feature — full ingestion pipeline + cited retrieval in chat.
 
-### [ ] SGS-030 — Document upload & storage (1d)
+### [x] SGS-030 — Document upload & storage (1d)
 **Depends on:** SGS-013
 - `Document` model (tenant-scoped): name, mime type, size, status (`uploaded → processing → ready | failed`), error message.
 - Upload endpoint (PDF/TXT, size limit env-configured). Storage behind an interface: local disk in dev, GCS in prod.
 **Acceptance criteria**
 - Upload rejects oversized/unsupported files with clear errors; files land in tenant-prefixed paths.
 
-### [ ] SGS-031 — Async ingestion worker (1d)
+### [x] SGS-031 — Async ingestion worker (1d)
 **Depends on:** SGS-030
 - ARQ worker (Redis) processing ingestion jobs; job enqueue behind a `TaskQueue` interface (Cloud Tasks adapter comes in SGS-041, ARQ stays the local/default driver).
 - Status transitions + retries (max 3) + dead-letter logging on permanent failure.
 **Acceptance criteria**
 - Killing the worker mid-job and restarting resumes cleanly; failed docs end in `failed` with a useful message.
 
-### [ ] SGS-032 — Parse, chunk, embed (1.5d)
+### [x] SGS-032 — Parse, chunk, embed (1.5d)
 **Depends on:** SGS-031, SGS-020
 - PDF text extraction (pymupdf), plain-text passthrough.
 - Chunking: recursive, token-aware (target ~512 tokens, ~64 overlap), preserves page numbers for citations.

@@ -37,6 +37,25 @@ class UsageService:
         self._repo = UsageRepository(db, tenant)
         self._tenant = tenant
 
+    async def record_embedding(
+        self, created_by: str, model: str, input_tokens: int, latency_ms: int
+    ) -> None:
+        """Embeddings don't go through tracked_* — record them directly."""
+        from src.domains.usage.models import FEATURE_INGESTION
+
+        self._repo.add(
+            LLMUsage(
+                feature=FEATURE_INGESTION,
+                model=model,
+                status=STATUS_OK,
+                input_tokens=input_tokens,
+                cost_usd=cost_for(model, Usage(input_tokens=input_tokens)),
+                latency_ms=latency_ms,
+                created_by=created_by,
+            )
+        )
+        await self._db.flush()
+
     async def tracked_complete(
         self,
         provider: ChatProvider,

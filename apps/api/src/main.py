@@ -6,6 +6,7 @@ from src.core.errors import register_error_handlers
 from src.core.health import router as health_router
 from src.core.logging import setup_logging
 from src.domains.chat.router import router as chat_router
+from src.domains.documents.router import router as documents_router
 from src.domains.tenants.router import invitations_router
 from src.domains.tenants.router import router as tenants_router
 from src.domains.usage.router import router as usage_router
@@ -36,6 +37,7 @@ def create_app() -> FastAPI:
     app.include_router(invitations_router)
     app.include_router(chat_router)
     app.include_router(usage_router)
+    app.include_router(documents_router)
     return app
 
 
