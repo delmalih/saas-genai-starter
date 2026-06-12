@@ -19,6 +19,7 @@ config.set_main_option("sqlalchemy.url", get_settings().database_url)
 # Import all model modules here so autogenerate sees every table.
 import src.domains.chat.models  # noqa: E402
 import src.domains.documents.models  # noqa: E402
+import src.domains.llm_settings.models  # noqa: E402
 import src.domains.tenants.models  # noqa: E402
 import src.domains.usage.models  # noqa: E402, F401
 

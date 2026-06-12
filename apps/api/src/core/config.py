@@ -26,9 +26,14 @@ class Settings(BaseSettings):
     # Email delivery: Resend when the key is set, console logging otherwise.
     resend_api_key: str | None = None
     email_from: str = "onboarding@resend.dev"
-    # LLM providers. Keys are optional at boot so the rest of the app runs
-    # without them — LLM calls fail with a clear error instead.
+    # Encrypts org-provided API keys at rest (Fernet). Generate with:
+    # python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    secret_encryption_key: str | None = None
+    # Server-wide LLM keys — the fallback when an org has not configured its
+    # own (self-host mode). Optional at boot: LLM calls fail with a clear
+    # error instead.
     anthropic_api_key: str | None = None
+    openai_api_key: str | None = None
     voyage_api_key: str | None = None
     llm_chat_model: str = "claude-sonnet-4-6"
     llm_embedding_model: str = "voyage-3.5"

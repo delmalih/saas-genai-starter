@@ -333,6 +333,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/llm-settings/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Catalog */
+        get: operations["get_catalog_llm_settings_catalog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/llm-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Llm Settings */
+        get: operations["get_llm_settings_llm_settings_get"];
+        /** Update Llm Settings */
+        put: operations["update_llm_settings_llm_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -357,6 +392,13 @@ export interface components {
             /** File */
             file: string;
         };
+        /** CatalogOut */
+        CatalogOut: {
+            /** Chat Providers */
+            chat_providers: components["schemas"]["ChatProviderOut"][];
+            /** Embedding Providers */
+            embedding_providers: components["schemas"]["EmbeddingProviderOut"][];
+        };
         /** ChatMessageOut */
         ChatMessageOut: {
             /**
@@ -378,6 +420,19 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** ChatProviderOut */
+        ChatProviderOut: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Models */
+            models: string[];
+            /** Default Model */
+            default_model: string;
+            /** Key Field */
+            key_field: string;
         };
         /** CitationOut */
         CitationOut: {
@@ -490,6 +545,17 @@ export interface components {
              */
             created_at: string;
         };
+        /** EmbeddingProviderOut */
+        EmbeddingProviderOut: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Model */
+            model: string;
+            /** Key Field */
+            key_field: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -540,6 +606,50 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** KeyState */
+        KeyState: {
+            /** Is Set */
+            is_set: boolean;
+            /** Last4 */
+            last4?: string | null;
+        };
+        /** LLMSettingsOut */
+        LLMSettingsOut: {
+            /**
+             * Chat Provider
+             * @enum {string}
+             */
+            chat_provider: "anthropic" | "openai";
+            /** Chat Model */
+            chat_model: string;
+            /**
+             * Embedding Provider
+             * @enum {string}
+             */
+            embedding_provider: "voyage" | "openai";
+            /** Keys */
+            keys: {
+                [key: string]: components["schemas"]["KeyState"];
+            };
+        };
+        /**
+         * LLMSettingsUpdate
+         * @description Key semantics: omitted = unchanged, empty string = clear, value = set.
+         */
+        LLMSettingsUpdate: {
+            /** Chat Provider */
+            chat_provider?: ("anthropic" | "openai") | null;
+            /** Chat Model */
+            chat_model?: string | null;
+            /** Embedding Provider */
+            embedding_provider?: ("voyage" | "openai") | null;
+            /** Anthropic Api Key */
+            anthropic_api_key?: string | null;
+            /** Openai Api Key */
+            openai_api_key?: string | null;
+            /** Voyage Api Key */
+            voyage_api_key?: string | null;
         };
         /** MeResponse */
         MeResponse: {
@@ -1404,6 +1514,103 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_catalog_llm_settings_catalog_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Org-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_llm_settings_llm_settings_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Org-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_llm_settings_llm_settings_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Org-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LLMSettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMSettingsOut"];
+                };
             };
             /** @description Validation Error */
             422: {

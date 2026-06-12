@@ -1257,6 +1257,161 @@
           }
         }
       }
+    },
+    "/llm-settings/catalog": {
+      "get": {
+        "tags": [
+          "llm-settings"
+        ],
+        "summary": "Get Catalog",
+        "operationId": "get_catalog_llm_settings_catalog_get",
+        "parameters": [
+          {
+            "name": "X-Org-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Org-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llm-settings": {
+      "get": {
+        "tags": [
+          "llm-settings"
+        ],
+        "summary": "Get Llm Settings",
+        "operationId": "get_llm_settings_llm_settings_get",
+        "parameters": [
+          {
+            "name": "X-Org-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Org-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LLMSettingsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "llm-settings"
+        ],
+        "summary": "Update Llm Settings",
+        "operationId": "update_llm_settings_llm_settings_put",
+        "parameters": [
+          {
+            "name": "X-Org-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Org-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LLMSettingsUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LLMSettingsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1303,6 +1458,30 @@
           "file"
         ],
         "title": "Body_upload_document_documents_post"
+      },
+      "CatalogOut": {
+        "properties": {
+          "chat_providers": {
+            "items": {
+              "$ref": "#/components/schemas/ChatProviderOut"
+            },
+            "type": "array",
+            "title": "Chat Providers"
+          },
+          "embedding_providers": {
+            "items": {
+              "$ref": "#/components/schemas/EmbeddingProviderOut"
+            },
+            "type": "array",
+            "title": "Embedding Providers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chat_providers",
+          "embedding_providers"
+        ],
+        "title": "CatalogOut"
       },
       "ChatMessageOut": {
         "properties": {
@@ -1351,6 +1530,42 @@
           "created_at"
         ],
         "title": "ChatMessageOut"
+      },
+      "ChatProviderOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "default_model": {
+            "type": "string",
+            "title": "Default Model"
+          },
+          "key_field": {
+            "type": "string",
+            "title": "Key Field"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "models",
+          "default_model",
+          "key_field"
+        ],
+        "title": "ChatProviderOut"
       },
       "CitationOut": {
         "properties": {
@@ -1637,6 +1852,34 @@
         ],
         "title": "DocumentOut"
       },
+      "EmbeddingProviderOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "key_field": {
+            "type": "string",
+            "title": "Key Field"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "model",
+          "key_field"
+        ],
+        "title": "EmbeddingProviderOut"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1733,6 +1976,153 @@
           "created_at"
         ],
         "title": "InvitationOut"
+      },
+      "KeyState": {
+        "properties": {
+          "is_set": {
+            "type": "boolean",
+            "title": "Is Set"
+          },
+          "last4": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last4"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_set"
+        ],
+        "title": "KeyState"
+      },
+      "LLMSettingsOut": {
+        "properties": {
+          "chat_provider": {
+            "type": "string",
+            "enum": [
+              "anthropic",
+              "openai"
+            ],
+            "title": "Chat Provider"
+          },
+          "chat_model": {
+            "type": "string",
+            "title": "Chat Model"
+          },
+          "embedding_provider": {
+            "type": "string",
+            "enum": [
+              "voyage",
+              "openai"
+            ],
+            "title": "Embedding Provider"
+          },
+          "keys": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/KeyState"
+            },
+            "type": "object",
+            "title": "Keys"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chat_provider",
+          "chat_model",
+          "embedding_provider",
+          "keys"
+        ],
+        "title": "LLMSettingsOut"
+      },
+      "LLMSettingsUpdate": {
+        "properties": {
+          "chat_provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "anthropic",
+                  "openai"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chat Provider"
+          },
+          "chat_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chat Model"
+          },
+          "embedding_provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "voyage",
+                  "openai"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Provider"
+          },
+          "anthropic_api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anthropic Api Key"
+          },
+          "openai_api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Openai Api Key"
+          },
+          "voyage_api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voyage Api Key"
+          }
+        },
+        "type": "object",
+        "title": "LLMSettingsUpdate",
+        "description": "Key semantics: omitted = unchanged, empty string = clear, value = set."
       },
       "MeResponse": {
         "properties": {

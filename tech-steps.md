@@ -249,7 +249,7 @@ Goal: organizations choose their LLM provider + model and supply their own
 API keys from the UI — the hosted demo costs the maintainer $0 in LLM usage,
 and self-hosters aren't locked to one vendor. Strategy decision 2026-06-12.
 
-### [ ] SGS-070 — Org LLM settings + encrypted key storage (1d)
+### [x] SGS-070 — Org LLM settings + encrypted key storage (1d)
 **Depends on:** SGS-013
 - `org_llm_settings` (one row per org): chat_provider (`anthropic | openai`),
   chat_model, embedding_provider (`voyage | openai`), API keys **encrypted at
