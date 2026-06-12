@@ -459,8 +459,8 @@ domain-adapted product from a handful of parameters.
 - All three buttons work on the public demo; signup → org creation flow unchanged.
 
 > Code shipped 2026-06: buttons render per enabled provider (env-gated),
-> account linking on matching verified email. Demo enablement needs OAuth
-> app credentials per provider (Apple requires a paid developer account).
+> account linking on matching verified email. Apple dropped (paid developer
+> account not worth it for the demo) — Google + GitHub on the public demo.
 
 ### [x] SGS-082 — SEO & discoverability (1d)
 **Depends on:** SGS-042
