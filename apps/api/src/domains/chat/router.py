@@ -20,8 +20,8 @@ from src.domains.chat.schemas import (
 from src.domains.chat.service import ChatService
 from src.domains.documents.retrieval import RetrievalService
 from src.domains.usage.service import UsageService
-from src.llm.errors import LLMError, ProviderNotConfigured
-from src.llm.factory import chat_provider_dep, get_embedding_provider
+from src.llm.errors import LLMError
+from src.llm.factory import chat_provider_dep, embedding_provider_dep
 from src.llm.provider import ChatProvider, EmbeddingProvider
 from src.llm.rate_limit import TenantRateLimiter, get_rate_limiter
 from src.llm.types import Message
@@ -29,6 +29,7 @@ from src.llm.types import Message
 router = APIRouter(prefix="/conversations", tags=["chat"])
 
 Provider = Annotated[ChatProvider, Depends(chat_provider_dep)]
+Embedder = Annotated[EmbeddingProvider | None, Depends(embedding_provider_dep)]
 RateLimiter = Annotated[TenantRateLimiter, Depends(get_rate_limiter)]
 
 
@@ -81,13 +82,6 @@ def _sse(payload: dict[str, Any]) -> str:
     return f"data: {json.dumps(payload)}\n\n"
 
 
-def _embedder_or_none() -> EmbeddingProvider | None:
-    try:
-        return get_embedding_provider()
-    except ProviderNotConfigured:
-        return None
-
-
 @router.post("/{conversation_id}/messages")
 async def send_message(
     conversation_id: uuid.UUID,
@@ -95,6 +89,7 @@ async def send_message(
     tenant: CurrentTenant,
     db: DbSession,
     provider: Provider,
+    embedder: Embedder,
     limiter: RateLimiter,
 ) -> StreamingResponse:
     """Stream the assistant reply over SSE.
@@ -120,7 +115,6 @@ async def send_message(
     usage = UsageService(db, tenant)
 
     # RAG kicks in as soon as the workspace has at least one ready document.
-    embedder = _embedder_or_none()
     retrieval = RetrievalService(db, tenant, embedder) if embedder else None
     use_rag = retrieval is not None and await retrieval.has_ready_documents()
     toolbox = AgentToolbox(db, tenant, retrieval)

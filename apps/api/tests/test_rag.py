@@ -13,7 +13,7 @@ from src.domains.documents.ingestion import ingest_document
 from src.domains.documents.retrieval import RetrievalService
 from src.domains.tenants.models import Membership, Organization
 from src.domains.usage.models import LLMUsage
-from src.llm.factory import chat_provider_dep, get_embedding_provider
+from src.llm.factory import chat_provider_dep, embedding_provider_dep
 from src.llm.types import ToolCall, Usage
 
 from tests.conftest import AuthHeaderFactory
@@ -37,7 +37,7 @@ def org_headers(tenant: TenantContext, auth_headers: AuthHeaderFactory) -> dict[
 @pytest.fixture
 def embedder(app: FastAPI) -> FakeEmbeddingProvider:
     fake = FakeEmbeddingProvider(dimension=1024)
-    app.dependency_overrides[get_embedding_provider] = lambda: fake
+    app.dependency_overrides[embedding_provider_dep] = lambda: fake
     return fake
 
 

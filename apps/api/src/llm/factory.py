@@ -27,6 +27,15 @@ def chat_provider_dep() -> ChatProvider:
     return get_chat_provider()
 
 
+def embedding_provider_dep() -> EmbeddingProvider | None:
+    """FastAPI dependency wrapper — None when Voyage is not configured,
+    so features depending on embeddings degrade instead of erroring."""
+    try:
+        return get_embedding_provider()
+    except ProviderNotConfigured:
+        return None
+
+
 @lru_cache
 def get_embedding_provider() -> EmbeddingProvider:
     settings = get_settings()
