@@ -400,13 +400,13 @@ account on file — set a low budget alert.
 
 ## EPIC 6 — Billing (optional, post-launch)
 
-### [ ] SGS-060 — Stripe module (2d)
+### [x] SGS-060 — Stripe module (2d)
 **Depends on:** SGS-013
 - Feature-flagged (`BILLING_ENABLED`): plans (free/pro), Stripe Checkout, customer portal, webhook handler (signature-verified, idempotent), subscription state on the organization.
 **Acceptance criteria**
 - Stripe test-mode E2E: subscribe → webhook updates plan → cancel → downgrade. Disabled flag = zero Stripe code paths executed.
 
-### [ ] SGS-061 — Plan-based quotas (1d)
+### [x] SGS-061 — Plan-based quotas (1d)
 **Depends on:** SGS-060, SGS-024
 - Rate/token limits resolved from the org's plan; upgrade prompts in the UI when limits are hit.
 **Acceptance criteria**

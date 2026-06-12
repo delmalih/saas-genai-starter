@@ -11,6 +11,8 @@ from src.core.health import router as health_router
 from src.core.logging import setup_logging
 from src.core.telemetry import setup_telemetry
 from src.domains.admin.router import router as admin_router
+from src.domains.billing.router import router as billing_router
+from src.domains.billing.router import webhooks_router as billing_webhooks_router
 from src.domains.chat.router import router as chat_router
 from src.domains.documents.router import router as documents_router
 from src.domains.jobs.router import router as jobs_router
@@ -62,6 +64,8 @@ def create_app() -> FastAPI:
     app.include_router(llm_settings_router)
     app.include_router(admin_router)
     app.include_router(jobs_router)
+    app.include_router(billing_router)
+    app.include_router(billing_webhooks_router)
     setup_telemetry(app)
     return app
 

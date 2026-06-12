@@ -12,6 +12,10 @@ ROLE_MEMBER = "member"
 ROLES = (ROLE_OWNER, ROLE_ADMIN, ROLE_MEMBER)
 
 
+PLAN_FREE = "free"
+PLAN_PRO = "pro"
+
+
 class Organization(Base):
     __tablename__ = "organizations"
 
@@ -20,6 +24,11 @@ class Organization(Base):
     # Platform-admin rate-limit overrides; None = server defaults apply.
     rate_limit_rpm_override: Mapped[int | None] = mapped_column()
     rate_limit_tpd_override: Mapped[int | None] = mapped_column()
+    # Billing state, synced from Stripe webhooks; inert when billing is off.
+    plan: Mapped[str] = mapped_column(String(16), default=PLAN_FREE, server_default=PLAN_FREE)
+    stripe_customer_id: Mapped[str | None] = mapped_column(String(64), unique=True)
+    stripe_subscription_id: Mapped[str | None] = mapped_column(String(64))
+    subscription_status: Mapped[str | None] = mapped_column(String(32))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     # lazy="raise": in an async codebase, implicit lazy loading either breaks

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AIProviderCard } from "@/components/settings/ai-provider-card";
+import { BillingCard } from "@/components/settings/billing-card";
 import { MembersCard } from "@/components/settings/members-card";
 import { OrgSettingsCard } from "@/components/settings/org-settings-card";
 import { ProfileCard } from "@/components/settings/profile-card";
@@ -17,6 +18,7 @@ export default function SettingsPage() {
       </div>
       <ProfileCard />
       <AIProviderCard />
+      <BillingCard />
       <OrgSettingsCard />
       <MembersCard />
     </div>

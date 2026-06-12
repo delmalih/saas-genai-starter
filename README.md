@@ -48,6 +48,11 @@ Built with **Next.js 15 · FastAPI · PostgreSQL + pgvector · Claude / OpenAI**
   **0.96 overall** (faithfulness 0.99, citations 0.93) on
   `claude-sonnet-4-6`. The first run scored 0.57 and exposed two real
   bugs — see [Why these choices](#why-these-choices).
+- **Billing, opt-in** — Stripe subscriptions (Checkout + customer portal +
+  signature-verified webhooks) behind a `BILLING_ENABLED` flag, with
+  plan-based rate limits (free/pro) and upgrade prompts when quotas are
+  hit. Off by default: no Stripe code runs and no Stripe account is
+  needed.
 
 ## Architecture
 

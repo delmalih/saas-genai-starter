@@ -11,6 +11,17 @@ export interface ChatCitation {
   score?: number;
 }
 
+export class ChatRequestError extends Error {
+  // The API's machine-readable error code (e.g. "quota_exceeded") — lets the
+  // UI react to the error kind without matching on message text.
+  constructor(
+    message: string,
+    public readonly code?: string,
+  ) {
+    super(message);
+  }
+}
+
 export type ChatStreamEvent =
   | { type: "delta"; text: string }
   | { type: "tool_use"; name: string; input: Record<string, unknown> }
@@ -37,13 +48,15 @@ export async function* streamChatMessage(
 
   if (!response.ok || !response.body) {
     let message = `Chat request failed (${response.status})`;
+    let code: string | undefined;
     try {
-      const body = (await response.json()) as { error?: { message?: string } };
+      const body = (await response.json()) as { error?: { code?: string; message?: string } };
       message = body.error?.message ?? message;
+      code = body.error?.code;
     } catch {
       // keep the generic message
     }
-    throw new Error(message);
+    throw new ChatRequestError(message, code);
   }
 
   const reader = response.body.getReader();

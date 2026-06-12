@@ -28,17 +28,27 @@ class TenantRateLimiter:
         client: redis.Redis,
         requests_per_minute: int,
         tokens_per_day: int,
+        plan_limits: dict[str, tuple[int, int]] | None = None,
     ):
         self._redis = client
         self._requests_per_minute = requests_per_minute
         self._tokens_per_day = tokens_per_day
+        # plan -> (rpm, tpd); unknown plans fall back to the base limits.
+        self._plan_limits = plan_limits or {}
 
     def effective_limits(
-        self, rpm_override: int | None = None, tpd_override: int | None = None
+        self,
+        rpm_override: int | None = None,
+        tpd_override: int | None = None,
+        plan: str | None = None,
     ) -> tuple[int, int]:
+        """Resolution order: platform-admin override > plan > base limits."""
+        plan_rpm, plan_tpd = self._plan_limits.get(
+            plan or "", (self._requests_per_minute, self._tokens_per_day)
+        )
         return (
-            rpm_override if rpm_override is not None else self._requests_per_minute,
-            tpd_override if tpd_override is not None else self._tokens_per_day,
+            rpm_override if rpm_override is not None else plan_rpm,
+            tpd_override if tpd_override is not None else plan_tpd,
         )
 
     async def check(
@@ -46,9 +56,10 @@ class TenantRateLimiter:
         tenant_id: uuid.UUID,
         rpm_override: int | None = None,
         tpd_override: int | None = None,
+        plan: str | None = None,
     ) -> None:
         """Raises QuotaExceeded if either budget is exhausted."""
-        rpm, tpd = self.effective_limits(rpm_override, tpd_override)
+        rpm, tpd = self.effective_limits(rpm_override, tpd_override, plan)
         try:
             await self._check_requests(tenant_id, rpm)
             await self._check_tokens(tenant_id, tpd)
@@ -126,8 +137,17 @@ def get_rate_limiter() -> TenantRateLimiter:
     from src.core.redis import get_redis
 
     settings = get_settings()
+    plan_limits = None
+    if settings.billing_enabled:
+        plan_limits = {
+            "pro": (
+                settings.rate_limit_pro_requests_per_minute,
+                settings.rate_limit_pro_tokens_per_day,
+            ),
+        }
     return TenantRateLimiter(
         get_redis(),
         requests_per_minute=settings.rate_limit_requests_per_minute,
         tokens_per_day=settings.rate_limit_tokens_per_day,
+        plan_limits=plan_limits,
     )

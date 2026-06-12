@@ -39,8 +39,18 @@ class Settings(BaseSettings):
     llm_embedding_model: str = "voyage-3.5"
     llm_max_output_tokens: int = 4096
     # Per-tenant limits on LLM-consuming endpoints (admin can override per org).
+    # The base values apply to the free plan; pro values apply when billing is
+    # enabled and the org has an active subscription.
     rate_limit_requests_per_minute: int = 30
     rate_limit_tokens_per_day: int = 500_000
+    rate_limit_pro_requests_per_minute: int = 120
+    rate_limit_pro_tokens_per_day: int = 5_000_000
+    # Billing (optional module): when disabled, billing endpoints 404 and no
+    # Stripe code is ever imported or executed.
+    billing_enabled: bool = False
+    stripe_secret_key: str | None = None
+    stripe_webhook_secret: str | None = None
+    stripe_price_pro: str | None = None  # recurring Price id for the Pro plan
     # Comma-separated emails with access to the platform admin panel.
     admin_emails: str = ""
     # Background jobs: "arq" polls Redis (local/default); "cloud_tasks"

@@ -14,6 +14,8 @@ class TenantContext:
     organization_id: uuid.UUID
     user_id: str
     role: str
+    # Billing plan ("free" | "pro") — drives rate limits when billing is on.
+    plan: str = "free"
     # Platform-admin rate-limit overrides carried from the organization row.
     rpm_override: int | None = None
     tpd_override: int | None = None
@@ -44,6 +46,7 @@ async def get_current_tenant(
         organization_id=organization_id,
         user_id=user.user_id,
         role=membership.role,
+        plan=membership.organization.plan,
         rpm_override=membership.organization.rate_limit_rpm_override,
         tpd_override=membership.organization.rate_limit_tpd_override,
     )

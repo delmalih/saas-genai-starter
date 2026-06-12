@@ -1,12 +1,12 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileSearchIcon, SendIcon, SettingsIcon } from "lucide-react";
+import { FileSearchIcon, SendIcon, SettingsIcon, SparklesIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
-import { streamChatMessage, type ChatCitation } from "@/lib/api/chat-stream";
+import { ChatRequestError, streamChatMessage, type ChatCitation } from "@/lib/api/chat-stream";
 import { useOrg } from "@/components/org-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -82,6 +82,7 @@ export function ChatView({ conversationId }: { conversationId: string | null }) 
   const [streamingText, setStreamingText] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const isBusy = streamingText !== null || pendingUser !== null;
@@ -100,6 +101,17 @@ export function ChatView({ conversationId }: { conversationId: string | null }) 
     },
   });
 
+  // Only fetched after a quota error — decides whether an upgrade CTA exists.
+  const { data: billing } = useQuery({
+    queryKey: ["billing", activeOrg?.id],
+    enabled: !!activeOrg && errorCode === "quota_exceeded",
+    queryFn: async () => {
+      const { data } = await api.GET("/billing");
+      return (data ?? null) as { enabled: boolean; plan: string } | null;
+    },
+  });
+  const canUpgrade = errorCode === "quota_exceeded" && billing?.enabled && billing.plan === "free";
+
   const messages = detail?.messages ?? [];
 
   useEffect(() => {
@@ -113,6 +125,7 @@ export function ChatView({ conversationId }: { conversationId: string | null }) 
     }
     setInput("");
     setError(null);
+    setErrorCode(null);
     setPendingUser(content);
     try {
       let targetId = conversationId;
@@ -145,6 +158,7 @@ export function ChatView({ conversationId }: { conversationId: string | null }) 
       }
     } catch (sendError) {
       setError(sendError instanceof Error ? sendError.message : "Something went wrong");
+      setErrorCode(sendError instanceof ChatRequestError ? (sendError.code ?? null) : null);
     } finally {
       setPendingUser(null);
       setStreamingText(null);
@@ -188,6 +202,15 @@ export function ChatView({ conversationId }: { conversationId: string | null }) 
                 >
                   <SettingsIcon className="size-3.5" />
                   Configure your AI provider in Settings
+                </Link>
+              ) : null}
+              {canUpgrade ? (
+                <Link
+                  href="/settings"
+                  className="inline-flex items-center gap-1.5 text-sm underline underline-offset-4"
+                >
+                  <SparklesIcon className="size-3.5" />
+                  Upgrade to Pro for higher limits
                 </Link>
               ) : null}
             </div>
