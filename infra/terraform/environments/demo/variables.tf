@@ -33,6 +33,11 @@ variable "admin_emails" {
   default = "da.elmalih@gmail.com"
 }
 
+variable "email_from" {
+  type    = string
+  default = "SaaS GenAI Starter <noreply@davidelmalih.com>"
+}
+
 variable "github_repository" {
   type    = string
   default = "delmalih/saas-genai-starter"

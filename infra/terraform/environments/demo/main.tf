@@ -131,6 +131,7 @@ module "api" {
     AUTH_JWT_ISSUER            = var.web_base_url
     AUTH_JWT_AUDIENCE          = var.web_base_url
     ADMIN_EMAILS               = var.admin_emails
+    EMAIL_FROM                 = var.email_from
     CLOUD_TASKS_QUEUE          = module.jobs_queue.queue_path
     INTERNAL_JOBS_BASE_URL     = local.api_url
     JOBS_SERVICE_ACCOUNT_EMAIL = google_service_account.jobs_invoker.email
