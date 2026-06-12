@@ -19,9 +19,9 @@ from src.domains.chat.schemas import (
 )
 from src.domains.chat.service import ChatService
 from src.domains.documents.retrieval import RetrievalService
+from src.domains.llm_settings.resolver import chat_provider_dep, embedding_provider_dep
 from src.domains.usage.service import UsageService
 from src.llm.errors import LLMError
-from src.llm.factory import chat_provider_dep, embedding_provider_dep
 from src.llm.provider import ChatProvider, EmbeddingProvider
 from src.llm.rate_limit import TenantRateLimiter, get_rate_limiter
 from src.llm.types import Message

@@ -368,6 +368,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/llm-settings/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Connection
+         * @description Validate the configured key with a minimal real call.
+         */
+        post: operations["test_connection_llm_settings_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -714,6 +734,22 @@ export interface components {
         SendMessageIn: {
             /** Content */
             content: string;
+        };
+        /** TestConnectionIn */
+        TestConnectionIn: {
+            /**
+             * Target
+             * @default chat
+             * @enum {string}
+             */
+            target: "chat" | "embedding";
+        };
+        /** TestConnectionOut */
+        TestConnectionOut: {
+            /** Ok */
+            ok: boolean;
+            /** Error */
+            error?: string | null;
         };
         /** UsageLimitsOut */
         UsageLimitsOut: {
@@ -1610,6 +1646,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LLMSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_connection_llm_settings_test_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Org-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestConnectionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestConnectionOut"];
                 };
             };
             /** @description Validation Error */

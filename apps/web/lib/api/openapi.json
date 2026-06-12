@@ -1412,6 +1412,66 @@
           }
         }
       }
+    },
+    "/llm-settings/test": {
+      "post": {
+        "tags": [
+          "llm-settings"
+        ],
+        "summary": "Test Connection",
+        "description": "Validate the configured key with a minimal real call.",
+        "operationId": "test_connection_llm_settings_test_post",
+        "parameters": [
+          {
+            "name": "X-Org-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Org-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestConnectionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestConnectionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2293,6 +2353,45 @@
           "content"
         ],
         "title": "SendMessageIn"
+      },
+      "TestConnectionIn": {
+        "properties": {
+          "target": {
+            "type": "string",
+            "enum": [
+              "chat",
+              "embedding"
+            ],
+            "title": "Target",
+            "default": "chat"
+          }
+        },
+        "type": "object",
+        "title": "TestConnectionIn"
+      },
+      "TestConnectionOut": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "TestConnectionOut"
       },
       "UsageLimitsOut": {
         "properties": {

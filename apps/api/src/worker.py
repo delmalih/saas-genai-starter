@@ -18,8 +18,11 @@ from src.core.logging import setup_logging
 from src.core.storage import get_storage
 from src.core.tenancy import TenantContext
 from src.domains.documents.ingestion import ingest_document
+from src.domains.llm_settings.resolver import (
+    resolve_chat_provider,
+    resolve_embedding_provider,
+)
 from src.llm.errors import ProviderNotConfigured
-from src.llm.factory import get_chat_provider, get_embedding_provider
 from src.llm.provider import ChatProvider
 
 logger = structlog.get_logger(__name__)
@@ -32,17 +35,23 @@ async def ingest_document_job(
     ctx: dict[str, Any], document_id: str, tenant_id: str, user_id: str
 ) -> None:
     tenant = TenantContext(organization_id=uuid.UUID(tenant_id), user_id=user_id, role="member")
-    chat_provider: ChatProvider | None
-    try:
-        chat_provider = get_chat_provider()
-    except ProviderNotConfigured:
-        chat_provider = None  # metadata extraction is skipped, ingestion proceeds
     async with get_sessionmaker()() as db:
+        try:
+            embedder = await resolve_embedding_provider(db, tenant)
+        except ProviderNotConfigured as exc:
+            # Config error, not transient — mark failed, no retry.
+            await _mark_failed(db, tenant, document_id, str(exc))
+            return
+        chat_provider: ChatProvider | None
+        try:
+            chat_provider = await resolve_chat_provider(db, tenant)
+        except ProviderNotConfigured:
+            chat_provider = None  # metadata extraction is skipped, ingestion proceeds
         try:
             await ingest_document(
                 db,
                 get_storage(),
-                get_embedding_provider(),
+                embedder,
                 tenant,
                 uuid.UUID(document_id),
                 chat_provider=chat_provider,
@@ -59,6 +68,18 @@ async def ingest_document_job(
                 )
                 raise Retry(defer=RETRY_DELAY_SECONDS * ctx["job_try"]) from exc
             logger.error("ingestion.dead_letter", document_id=document_id, error=str(exc))
+
+
+async def _mark_failed(ctx_db: Any, tenant: TenantContext, document_id: str, message: str) -> None:
+    from src.domains.documents.models import STATUS_FAILED
+    from src.domains.documents.repository import DocumentRepository
+
+    document = await DocumentRepository(ctx_db, tenant).get(uuid.UUID(document_id))
+    if document is not None:
+        document.status = STATUS_FAILED
+        document.error = message[:2000]
+        await ctx_db.commit()
+    logger.error("ingestion.not_configured", document_id=document_id, error=message)
 
 
 async def startup(ctx: dict[str, Any]) -> None:

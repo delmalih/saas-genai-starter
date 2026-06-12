@@ -7,10 +7,10 @@ import pytest
 from fastapi import FastAPI
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.domains.llm_settings.resolver import chat_provider_dep
 from src.domains.tenants.models import Membership, Organization
 from src.domains.usage.models import LLMUsage
 from src.llm.errors import ProviderUnavailable
-from src.llm.factory import chat_provider_dep
 from src.llm.rate_limit import TenantRateLimiter, get_rate_limiter
 from src.llm.types import Usage
 

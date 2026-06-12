@@ -261,7 +261,7 @@ and self-hosters aren't locked to one vendor. Strategy decision 2026-06-12.
 - Keys never appear in any API response, log line or trace; cross-tenant
   test proves org A cannot use or read org B's keys.
 
-### [ ] SGS-071 — Multi-provider resolution (1d)
+### [x] SGS-071 — Multi-provider resolution (1d)
 **Depends on:** SGS-070, SGS-020
 - `OpenAIProvider` (chat + embeddings) implementing the existing protocols;
   model allowlist per provider in code (with pricing table entries).

@@ -11,9 +11,9 @@ from src.core.tenancy import TenantContext
 from src.domains.chat.models import ChatMessage
 from src.domains.documents.ingestion import ingest_document
 from src.domains.documents.retrieval import RetrievalService
+from src.domains.llm_settings.resolver import chat_provider_dep, embedding_provider_dep
 from src.domains.tenants.models import Membership, Organization
 from src.domains.usage.models import LLMUsage
-from src.llm.factory import chat_provider_dep, embedding_provider_dep
 from src.llm.types import ToolCall, Usage
 
 from tests.conftest import AuthHeaderFactory

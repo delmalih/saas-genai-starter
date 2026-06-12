@@ -48,6 +48,25 @@ PRICING: dict[str, ModelPricing] = {
         cache_read_per_mtok=Decimal("0"),
         cache_write_per_mtok=Decimal("0"),
     ),
+    # OpenAI — verify against https://openai.com/api/pricing when bumping models.
+    "gpt-5.1": ModelPricing(
+        input_per_mtok=Decimal("1.25"),
+        output_per_mtok=Decimal("10.00"),
+        cache_read_per_mtok=Decimal("0.125"),
+        cache_write_per_mtok=Decimal("0"),
+    ),
+    "gpt-5.1-mini": ModelPricing(
+        input_per_mtok=Decimal("0.25"),
+        output_per_mtok=Decimal("2.00"),
+        cache_read_per_mtok=Decimal("0.025"),
+        cache_write_per_mtok=Decimal("0"),
+    ),
+    "text-embedding-3-small": ModelPricing(
+        input_per_mtok=Decimal("0.02"),
+        output_per_mtok=Decimal("0"),
+        cache_read_per_mtok=Decimal("0"),
+        cache_write_per_mtok=Decimal("0"),
+    ),
 }
 
 

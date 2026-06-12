@@ -1,4 +1,7 @@
+from typing import Literal
+
 from fastapi import APIRouter
+from pydantic import BaseModel
 
 from src.core.db import DbSession
 from src.core.tenancy import CurrentTenant
@@ -66,3 +69,36 @@ async def update_llm_settings(
     response = _to_out(settings)
     await db.commit()
     return response
+
+
+class TestConnectionIn(BaseModel):
+    target: Literal["chat", "embedding"] = "chat"
+
+
+class TestConnectionOut(BaseModel):
+    ok: bool
+    error: str | None = None
+
+
+@router.post("/test")
+async def test_connection(
+    payload: TestConnectionIn, tenant: CurrentTenant, db: DbSession
+) -> TestConnectionOut:
+    """Validate the configured key with a minimal real call."""
+    from src.domains.llm_settings.resolver import (
+        resolve_chat_provider,
+        resolve_embedding_provider,
+    )
+    from src.llm.errors import LLMError
+    from src.llm.types import Message
+
+    try:
+        if payload.target == "chat":
+            provider = await resolve_chat_provider(db, tenant)
+            await provider.complete([Message(role="user", content="ping")], max_tokens=1)
+        else:
+            embedder = await resolve_embedding_provider(db, tenant)
+            await embedder.embed(["ping"])
+    except LLMError as exc:
+        return TestConnectionOut(ok=False, error=str(exc))
+    return TestConnectionOut(ok=True)
