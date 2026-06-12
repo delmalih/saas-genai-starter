@@ -462,7 +462,7 @@ domain-adapted product from a handful of parameters.
 > account linking on matching verified email. Demo enablement needs OAuth
 > app credentials per provider (Apple requires a paid developer account).
 
-### [ ] SGS-082 — SEO & discoverability (1d)
+### [x] SGS-082 — SEO & discoverability (1d)
 **Depends on:** SGS-042
 - Public pages (landing, login, docs): per-page metadata, Open Graph + Twitter
   cards, `sitemap.xml`, `robots.txt`, canonical URLs, JSON-LD (SoftwareApplication),
@@ -471,7 +471,7 @@ domain-adapted product from a handful of parameters.
 **Acceptance criteria**
 - Rich preview when sharing the demo URL; Lighthouse SEO ≥ 95 on public pages.
 
-### [ ] SGS-083 — Agent-driven bootstrap ("use this starter") (2d)
+### [x] SGS-083 — Agent-driven bootstrap ("use this starter") (2d)
 **Depends on:** SGS-053
 - Make the starter parameterizable so an LLM/coding agent can adapt it in one pass:
   - A single **manifest of bootstrap parameters** (product name, company, domain
