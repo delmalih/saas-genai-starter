@@ -350,7 +350,7 @@ account on file — set a low budget alert.
 **Acceptance criteria**
 - A single chat request produces one connected trace: HTTP → service → LLM call → DB writes.
 
-### [ ] SGS-045 — Public demo environment (0.5d)
+### [~] SGS-045 — Public demo environment (0.5d)
 **Depends on:** SGS-043, SGS-072
 - BYO-key demo: visitors sign up, paste their own provider key (EPIC 7) and
   use the product — the maintainer pays no LLM cost. Landing + empty states
