@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.config import get_settings
 from src.core.errors import register_error_handlers
@@ -16,6 +17,15 @@ def create_app() -> FastAPI:
         title="saas-genai-starter API",
         docs_url=None if settings.is_production else "/docs",
         redoc_url=None,
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        # The web app calls the API from the browser with Authorization and
+        # X-Org-Id headers — both trigger CORS preflights.
+        allow_origins=[settings.web_base_url],
+        allow_methods=["*"],
+        allow_headers=["Authorization", "Content-Type", "X-Org-Id"],
+        max_age=600,
     )
     register_error_handlers(app)
     app.include_router(health_router)
