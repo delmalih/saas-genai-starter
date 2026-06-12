@@ -126,7 +126,7 @@ Decision: **Better Auth** in the Next.js app (Postgres-backed), FastAPI validate
 **Acceptance criteria**
 - Switching orgs visibly switches all data in the app shell.
 
-### [ ] SGS-016 — Redirect authenticated users away from auth pages (0.25d)
+### [x] SGS-016 — Redirect authenticated users away from auth pages (0.25d)
 **Depends on:** SGS-010
 - `/login`, `/signup` (and other guest-only pages) redirect to the app home when a
   valid session already exists — server-side, before the form renders.
