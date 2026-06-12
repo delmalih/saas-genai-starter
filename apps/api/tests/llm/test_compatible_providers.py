@@ -14,9 +14,7 @@ from src.llm.errors import ProviderBadRequest
 from src.llm.openai_provider import OpenAIEmbeddingProvider, OpenAIProvider
 from src.llm.types import Message
 
-OPENAI_COMPATIBLE_CHAT = [
-    info for info in CHAT_PROVIDERS.values() if info.id != PROVIDER_ANTHROPIC
-]
+OPENAI_COMPATIBLE_CHAT = [info for info in CHAT_PROVIDERS.values() if info.id != PROVIDER_ANTHROPIC]
 
 
 @pytest.mark.parametrize("info", OPENAI_COMPATIBLE_CHAT, ids=lambda i: i.id)

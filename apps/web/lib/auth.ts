@@ -3,8 +3,26 @@ import { nextCookies } from "better-auth/next-js";
 import { jwt } from "better-auth/plugins";
 import { Pool } from "pg";
 
-const googleEnabled =
-  !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
+// Each SSO provider activates when its env pair is set — none is required,
+// email/password always works.
+const socialProviderConfig = {
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  },
+  github: {
+    clientId: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  },
+  apple: {
+    clientId: process.env.APPLE_CLIENT_ID,
+    clientSecret: process.env.APPLE_CLIENT_SECRET,
+  },
+};
+
+const enabledSocialProviders = Object.entries(socialProviderConfig)
+  .filter(([, config]) => !!config.clientId && !!config.clientSecret)
+  .map(([id]) => id);
 
 export const auth = betterAuth({
   database: new Pool({
@@ -27,14 +45,25 @@ export const auth = betterAuth({
       console.info(`Password reset for ${user.email}: ${url}`);
     },
   },
-  socialProviders: googleEnabled
-    ? {
-        google: {
-          clientId: process.env.GOOGLE_CLIENT_ID as string,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-        },
-      }
-    : undefined,
+  socialProviders: Object.fromEntries(
+    enabledSocialProviders.map((id) => [
+      id,
+      {
+        clientId: socialProviderConfig[id as keyof typeof socialProviderConfig]
+          .clientId as string,
+        clientSecret: socialProviderConfig[id as keyof typeof socialProviderConfig]
+          .clientSecret as string,
+      },
+    ]),
+  ),
+  account: {
+    // SSO sign-in with an email that already has an account links the new
+    // provider to it (verified-email providers only) instead of failing.
+    accountLinking: {
+      enabled: true,
+      trustedProviders: enabledSocialProviders,
+    },
+  },
   plugins: [
     // Exposes /api/auth/jwks + /api/auth/token so the FastAPI backend can
     // validate sessions without sharing the auth database.
@@ -44,4 +73,4 @@ export const auth = betterAuth({
   ],
 });
 
-export { googleEnabled };
+export { enabledSocialProviders };

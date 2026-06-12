@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { enabledSocialProviders } from "@/lib/auth";
 import { AuthCard } from "@/components/auth/auth-card";
 import { SignupForm } from "@/components/auth/signup-form";
+import { SocialButtons } from "@/components/auth/social-buttons";
 
 export const metadata: Metadata = { title: "Create account" };
 
@@ -19,6 +21,7 @@ export default function SignupPage() {
         </>
       }
     >
+      <SocialButtons providers={enabledSocialProviders} />
       <SignupForm />
     </AuthCard>
   );

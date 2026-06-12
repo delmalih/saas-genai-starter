@@ -450,13 +450,17 @@ domain-adapted product from a handful of parameters.
 > Ollama (needs a per-org base-URL setting since the server must reach the
 > user's instance).
 
-### [ ] SGS-081 — SSO logins: Google, GitHub, Apple (1d)
+### [~] SGS-081 — SSO logins: Google, GitHub, Apple (1d)
 **Depends on:** SGS-010
 - Google is already wired (env-gated) — document the OAuth app setup and enable it
   on the demo. Add **GitHub** (the audience of this repo) and **Apple** via Better
   Auth social providers; account linking when the email matches an existing user.
 **Acceptance criteria**
 - All three buttons work on the public demo; signup → org creation flow unchanged.
+
+> Code shipped 2026-06: buttons render per enabled provider (env-gated),
+> account linking on matching verified email. Demo enablement needs OAuth
+> app credentials per provider (Apple requires a paid developer account).
 
 ### [ ] SGS-082 — SEO & discoverability (1d)
 **Depends on:** SGS-042
