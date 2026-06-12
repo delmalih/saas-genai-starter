@@ -40,6 +40,22 @@ def jwks_endpoint(monkeypatch: pytest.MonkeyPatch, signing_key: Ed25519PrivateKe
     monkeypatch.setattr(JwksCache, "_refresh", fake_refresh)
 
 
+@pytest.fixture(autouse=True)
+async def reset_redis_client() -> AsyncIterator[None]:
+    """The cached Redis client binds to the first event loop that used it;
+    pytest-asyncio gives each test its own loop, so close and forget the
+    client after every test."""
+    from src.core.redis import get_redis
+
+    yield
+    client = get_redis()
+    get_redis.cache_clear()
+    try:
+        await client.aclose()
+    except Exception as exc:
+        print(f"redis teardown: {exc}")  # noqa: T201
+
+
 @pytest.fixture
 def auth_headers(signing_key: Ed25519PrivateKey) -> AuthHeaderFactory:
     def make(

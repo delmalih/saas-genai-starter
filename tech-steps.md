@@ -170,7 +170,7 @@ resilience, rate limiting. This epic is the core value of the repo.
 **Acceptance criteria**
 - Tests prove isolation: tenant A exhausting its quota does not affect tenant B.
 
-### [ ] SGS-025 — Chat (no RAG yet): API + UI (1.5d)
+### [x] SGS-025 — Chat (no RAG yet): API + UI (1.5d)
 **Depends on:** SGS-021, SGS-022, SGS-024
 - Models: `Conversation`, `Message` (tenant-scoped).
 - `POST /chat/{conversation_id}/messages` streaming via SSE; persists assistant message on completion; handles client disconnect (usage still recorded).

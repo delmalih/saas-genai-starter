@@ -61,10 +61,33 @@ class QuotaExceeded(ApiError):
 
 
 def register_error_handlers(app: FastAPI) -> None:
+    # Local import: core stays free of llm imports at module load.
+    from src.llm.errors import (
+        ContextTooLong,
+        LLMError,
+        ProviderNotConfigured,
+        RateLimited,
+    )
+
     @app.exception_handler(ApiError)
     async def handle_api_error(request: Request, exc: ApiError) -> JSONResponse:
         return JSONResponse(
             status_code=exc.status_code,
             content={"error": {"code": exc.code, "message": exc.message}},
             headers=exc.headers,
+        )
+
+    @app.exception_handler(LLMError)
+    async def handle_llm_error(request: Request, exc: LLMError) -> JSONResponse:
+        if isinstance(exc, RateLimited):
+            status_code, code = 429, "provider_rate_limited"
+        elif isinstance(exc, ContextTooLong):
+            status_code, code = 413, "context_too_long"
+        elif isinstance(exc, ProviderNotConfigured):
+            status_code, code = 503, "llm_not_configured"
+        else:
+            status_code, code = 503, "llm_unavailable"
+        return JSONResponse(
+            status_code=status_code,
+            content={"error": {"code": code, "message": str(exc)}},
         )

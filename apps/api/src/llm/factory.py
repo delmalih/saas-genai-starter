@@ -22,6 +22,11 @@ def get_chat_provider() -> ChatProvider:
     )
 
 
+def chat_provider_dep() -> ChatProvider:
+    """FastAPI dependency wrapper — overridable in tests."""
+    return get_chat_provider()
+
+
 @lru_cache
 def get_embedding_provider() -> EmbeddingProvider:
     settings = get_settings()

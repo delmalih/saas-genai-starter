@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
-import { PagePlaceholder } from "@/components/page-placeholder";
+import { ChatView } from "@/components/chat/chat-view";
 
 export const metadata: Metadata = { title: "Chat" };
 
-export default function ChatPage() {
-  return (
-    <PagePlaceholder
-      title="Chat"
-      description="Streaming conversations with your documents, with citations."
-      ticket="SGS-025"
-    />
-  );
+export default function NewChatPage() {
+  return <ChatView conversationId={null} />;
 }
