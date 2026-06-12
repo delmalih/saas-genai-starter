@@ -49,9 +49,20 @@ class ChatService:
     async def get_messages(self, conversation_id: uuid.UUID) -> list[ChatMessage]:
         return await self._messages.list_for_conversation(conversation_id)
 
-    async def add_message(self, conversation_id: uuid.UUID, role: str, content: str) -> ChatMessage:
+    async def add_message(
+        self,
+        conversation_id: uuid.UUID,
+        role: str,
+        content: str,
+        citations: list[dict[str, object]] | None = None,
+    ) -> ChatMessage:
         message = self._messages.add(
-            ChatMessage(conversation_id=conversation_id, role=role, content=content)
+            ChatMessage(
+                conversation_id=conversation_id,
+                role=role,
+                content=content,
+                citations=citations or None,
+            )
         )
         await self._db.flush()
         await self._db.refresh(message)

@@ -3,9 +3,18 @@ import { getActiveOrgId } from "../org-store";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+export interface ChatCitation {
+  document_id: string;
+  document_name: string;
+  page: number | null;
+  snippet: string;
+  score?: number;
+}
+
 export type ChatStreamEvent =
   | { type: "delta"; text: string }
-  | { type: "done"; message_id: string }
+  | { type: "tool_use"; name: string; input: Record<string, unknown> }
+  | { type: "done"; message_id: string; citations: ChatCitation[] }
   | { type: "error"; message: string };
 
 // openapi-fetch doesn't expose response bodies as streams, so the SSE

@@ -1,11 +1,11 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { SendIcon } from "lucide-react";
+import { FileSearchIcon, SendIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
-import { streamChatMessage } from "@/lib/api/chat-stream";
+import { streamChatMessage, type ChatCitation } from "@/lib/api/chat-stream";
 import { useOrg } from "@/components/org-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  citations: ChatCitation[] | null;
 }
 
 interface ConversationDetail {
@@ -22,7 +23,41 @@ interface ConversationDetail {
   messages: ChatMessage[];
 }
 
-function MessageBubble({ role, children }: { role: "user" | "assistant"; children: React.ReactNode }) {
+function CitationChips({ citations }: { citations: ChatCitation[] }) {
+  // Dedupe by document+page for display.
+  const seen = new Set<string>();
+  const unique = citations.filter((citation) => {
+    const key = `${citation.document_id}:${citation.page}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {unique.map((citation) => (
+        <span
+          key={`${citation.document_id}:${citation.page}`}
+          title={citation.snippet}
+          className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground"
+        >
+          <FileSearchIcon className="size-3" />
+          {citation.document_name}
+          {citation.page != null ? ` · p.${citation.page}` : ""}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function MessageBubble({
+  role,
+  citations,
+  children,
+}: {
+  role: "user" | "assistant";
+  citations?: ChatCitation[] | null;
+  children: React.ReactNode;
+}) {
   return (
     <div className={cn("flex", role === "user" ? "justify-end" : "justify-start")}>
       <div
@@ -32,6 +67,7 @@ function MessageBubble({ role, children }: { role: "user" | "assistant"; childre
         )}
       >
         {children}
+        {citations?.length ? <CitationChips citations={citations} /> : null}
       </div>
     </div>
   );
@@ -43,6 +79,7 @@ export function ChatView({ conversationId }: { conversationId: string | null }) 
   const { activeOrg } = useOrg();
   const [pendingUser, setPendingUser] = useState<string | null>(null);
   const [streamingText, setStreamingText] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -91,7 +128,10 @@ export function ChatView({ conversationId }: { conversationId: string | null }) 
       setStreamingText("");
       for await (const event of streamChatMessage(targetId, content)) {
         if (event.type === "delta") {
+          setSearching(false);
           setStreamingText((previous) => (previous ?? "") + event.text);
+        } else if (event.type === "tool_use") {
+          setSearching(true);
         } else if (event.type === "error") {
           throw new Error(event.message);
         }
@@ -107,6 +147,7 @@ export function ChatView({ conversationId }: { conversationId: string | null }) 
     } finally {
       setPendingUser(null);
       setStreamingText(null);
+      setSearching(false);
     }
   }
 
@@ -120,12 +161,18 @@ export function ChatView({ conversationId }: { conversationId: string | null }) 
             </div>
           ) : null}
           {messages.map((message) => (
-            <MessageBubble key={message.id} role={message.role}>
+            <MessageBubble key={message.id} role={message.role} citations={message.citations}>
               {message.content}
             </MessageBubble>
           ))}
           {pendingUser ? <MessageBubble role="user">{pendingUser}</MessageBubble> : null}
-          {streamingText !== null ? (
+          {searching ? (
+            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+              <FileSearchIcon className="size-3.5 animate-pulse" />
+              Searching documents…
+            </p>
+          ) : null}
+          {streamingText !== null && !searching ? (
             <MessageBubble role="assistant">
               {streamingText || <span className="animate-pulse">…</span>}
             </MessageBubble>

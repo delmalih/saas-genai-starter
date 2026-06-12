@@ -11,10 +11,19 @@ class ConversationOut(BaseModel):
     created_at: datetime
 
 
+class CitationOut(BaseModel):
+    document_id: uuid.UUID
+    document_name: str
+    page: int | None = None
+    snippet: str
+    score: float | None = None
+
+
 class ChatMessageOut(BaseModel):
     id: uuid.UUID
     role: Literal["user", "assistant"]
     content: str
+    citations: list[CitationOut] | None = None
     created_at: datetime
 
 

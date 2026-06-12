@@ -1,7 +1,9 @@
 import uuid
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.core.db import Base
@@ -31,4 +33,7 @@ class ChatMessage(TenantOwnedMixin, Base):
     )
     role: Mapped[str] = mapped_column(String(16))  # user | assistant
     content: Mapped[str] = mapped_column(Text)
+    # RAG citations: [{document_id, document_name, page, snippet}] — null
+    # for user messages and answers that used no retrieval.
+    citations: Mapped[list[dict[str, Any]] | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

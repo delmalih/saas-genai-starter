@@ -18,7 +18,9 @@ from src.core.logging import setup_logging
 from src.core.storage import get_storage
 from src.core.tenancy import TenantContext
 from src.domains.documents.ingestion import ingest_document
-from src.llm.factory import get_embedding_provider
+from src.llm.errors import ProviderNotConfigured
+from src.llm.factory import get_chat_provider, get_embedding_provider
+from src.llm.provider import ChatProvider
 
 logger = structlog.get_logger(__name__)
 
@@ -30,6 +32,11 @@ async def ingest_document_job(
     ctx: dict[str, Any], document_id: str, tenant_id: str, user_id: str
 ) -> None:
     tenant = TenantContext(organization_id=uuid.UUID(tenant_id), user_id=user_id, role="member")
+    chat_provider: ChatProvider | None
+    try:
+        chat_provider = get_chat_provider()
+    except ProviderNotConfigured:
+        chat_provider = None  # metadata extraction is skipped, ingestion proceeds
     async with get_sessionmaker()() as db:
         try:
             await ingest_document(
@@ -38,6 +45,7 @@ async def ingest_document_job(
                 get_embedding_provider(),
                 tenant,
                 uuid.UUID(document_id),
+                chat_provider=chat_provider,
             )
         except Exception as exc:
             # ingest_document already marked the document failed; retry a

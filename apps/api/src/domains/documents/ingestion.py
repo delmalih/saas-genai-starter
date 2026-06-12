@@ -1,3 +1,4 @@
+import json
 import time
 import uuid
 
@@ -13,14 +14,29 @@ from src.domains.documents.models import (
     Document,
     DocumentChunk,
 )
-from src.domains.documents.parsing import chunk_pages, extract_pages
+from src.domains.documents.parsing import Page, chunk_pages, extract_pages
 from src.domains.documents.repository import DocumentChunkRepository, DocumentRepository
+from src.domains.usage.models import FEATURE_EXTRACTION
 from src.domains.usage.service import UsageService
-from src.llm.provider import EmbeddingProvider
+from src.llm.provider import ChatProvider, EmbeddingProvider
+from src.llm.types import Message
 
 logger = structlog.get_logger(__name__)
 
 EMBED_BATCH_SIZE = 100
+METADATA_SAMPLE_CHARS = 6000
+
+METADATA_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "title": {"type": "string", "description": "A short descriptive title"},
+        "language": {"type": "string", "description": "ISO 639-1 code, e.g. en, fr"},
+        "summary": {"type": "string", "description": "Two sentences maximum"},
+        "topics": {"type": "array", "items": {"type": "string"}, "maxItems": 5},
+    },
+    "required": ["title", "language", "summary", "topics"],
+    "additionalProperties": False,
+}
 
 
 async def ingest_document(
@@ -29,6 +45,7 @@ async def ingest_document(
     embedder: EmbeddingProvider,
     tenant: TenantContext,
     document_id: uuid.UUID,
+    chat_provider: ChatProvider | None = None,
 ) -> None:
     """Parse → chunk → embed → store. Sets the document status to ready,
     or failed with the error message. Idempotent: re-running replaces chunks."""
@@ -45,7 +62,7 @@ async def ingest_document(
     await db.commit()
 
     try:
-        await _run_pipeline(db, storage, embedder, tenant, document, chunks_repo)
+        await _run_pipeline(db, storage, embedder, tenant, document, chunks_repo, chat_provider)
     except Exception as exc:
         await db.rollback()
         document.status = STATUS_FAILED
@@ -62,6 +79,7 @@ async def _run_pipeline(
     tenant: TenantContext,
     document: Document,
     chunks_repo: DocumentChunkRepository,
+    chat_provider: ChatProvider | None,
 ) -> None:
     data = await storage.load(document.storage_path)
     pages = extract_pages(data, document.mime_type)
@@ -93,6 +111,41 @@ async def _run_pipeline(
                 )
             )
 
+    if chat_provider is not None:
+        await _extract_metadata(db, tenant, chat_provider, document, pages)
+
     document.status = STATUS_READY
     await db.commit()
     logger.info("ingestion.ready", document_id=str(document.id), chunks=len(chunks))
+
+
+async def _extract_metadata(
+    db: AsyncSession,
+    tenant: TenantContext,
+    chat_provider: ChatProvider,
+    document: Document,
+    pages: list[Page],
+) -> None:
+    """Best-effort: a failure here must never fail the ingestion."""
+    sample = "\n".join(page.text for page in pages)[:METADATA_SAMPLE_CHARS]
+    prompt = (
+        "Extract metadata from this document excerpt. Be factual and concise.\n\n"
+        f"<excerpt>\n{sample}\n</excerpt>"
+    )
+    try:
+        completion = await UsageService(db, tenant).tracked_complete(
+            chat_provider,
+            FEATURE_EXTRACTION,
+            document.created_by,
+            [Message(role="user", content=prompt)],
+            json_schema=METADATA_SCHEMA,
+            max_tokens=500,
+        )
+        data = json.loads(completion.text)
+        document.title = str(data.get("title", ""))[:255] or None
+        document.language = str(data.get("language", ""))[:16] or None
+        document.summary = str(data.get("summary", "")) or None
+        topics = data.get("topics")
+        document.topics = [str(t) for t in topics][:5] if isinstance(topics, list) else None
+    except Exception as exc:
+        logger.warning("ingestion.metadata_failed", document_id=str(document.id), error=str(exc))

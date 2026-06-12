@@ -26,23 +26,41 @@ def make_completion(text: str = "ok", **overrides: Any) -> Completion:
 
 
 class FakeChatProvider:
-    """Scriptable provider: raise the queued errors, then return the result."""
+    """Scriptable provider.
+
+    Behavior per call: raise the next queued error if any; otherwise return
+    the next completion from `script` (sequential, e.g. a tool_use round then
+    a final answer), falling back to `result` once the script is exhausted.
+    Every call's kwargs are captured in `received` for assertions.
+    """
 
     def __init__(
         self,
         result: Completion | None = None,
         errors: list[LLMError] | None = None,
         stream_chunks: list[str] | None = None,
+        script: list[Completion] | None = None,
     ):
         self.result = result or make_completion()
         self.errors = errors or []
         self.stream_chunks = stream_chunks or ["hel", "lo"]
+        self.script = list(script) if script else []
         self.calls = 0
+        self.received: list[dict[str, Any]] = []
 
     def _next_error(self) -> LLMError | None:
         if self.errors:
             return self.errors.pop(0)
         return None
+
+    def _next_completion(self) -> Completion:
+        if self.script:
+            return self.script.pop(0)
+        return self.result
+
+    def _record(self, **kwargs: Any) -> None:
+        self.calls += 1
+        self.received.append(kwargs)
 
     async def complete(
         self,
@@ -52,11 +70,11 @@ class FakeChatProvider:
         json_schema: dict[str, Any] | None = None,
         max_tokens: int | None = None,
     ) -> Completion:
-        self.calls += 1
+        self._record(messages=messages, system=system, tools=tools, json_schema=json_schema)
         error = self._next_error()
         if error:
             raise error
-        return self.result
+        return self._next_completion()
 
     async def stream(
         self,
@@ -65,13 +83,15 @@ class FakeChatProvider:
         tools: list[ToolDef] | None = None,
         max_tokens: int | None = None,
     ) -> AsyncIterator[StreamEvent]:
-        self.calls += 1
+        self._record(messages=messages, system=system, tools=tools)
         error = self._next_error()
         if error:
             raise error
-        for chunk in self.stream_chunks:
-            yield TextDelta(text=chunk)
-        yield StreamEnd(completion=self.result)
+        completion = self._next_completion()
+        if completion.stop_reason != "tool_use":
+            for chunk in self.stream_chunks:
+                yield TextDelta(text=chunk)
+        yield StreamEnd(completion=completion)
 
 
 class FakeEmbeddingProvider:

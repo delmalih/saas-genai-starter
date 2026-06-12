@@ -8,6 +8,7 @@ from fastapi.responses import StreamingResponse
 
 from src.core.db import DbSession
 from src.core.tenancy import CurrentTenant
+from src.domains.chat.agent import AgentToolbox, run_agent
 from src.domains.chat.models import ROLE_ASSISTANT, ROLE_USER
 from src.domains.chat.schemas import (
     ChatMessageOut,
@@ -16,14 +17,14 @@ from src.domains.chat.schemas import (
     ConversationOut,
     SendMessageIn,
 )
-from src.domains.chat.service import SYSTEM_PROMPT, ChatService
-from src.domains.usage.models import FEATURE_CHAT
+from src.domains.chat.service import ChatService
+from src.domains.documents.retrieval import RetrievalService
 from src.domains.usage.service import UsageService
-from src.llm.errors import LLMError
-from src.llm.factory import chat_provider_dep
-from src.llm.provider import ChatProvider
+from src.llm.errors import LLMError, ProviderNotConfigured
+from src.llm.factory import chat_provider_dep, get_embedding_provider
+from src.llm.provider import ChatProvider, EmbeddingProvider
 from src.llm.rate_limit import TenantRateLimiter, get_rate_limiter
-from src.llm.types import Message, StreamEnd, TextDelta
+from src.llm.types import Message
 
 router = APIRouter(prefix="/conversations", tags=["chat"])
 
@@ -80,6 +81,13 @@ def _sse(payload: dict[str, Any]) -> str:
     return f"data: {json.dumps(payload)}\n\n"
 
 
+def _embedder_or_none() -> EmbeddingProvider | None:
+    try:
+        return get_embedding_provider()
+    except ProviderNotConfigured:
+        return None
+
+
 @router.post("/{conversation_id}/messages")
 async def send_message(
     conversation_id: uuid.UUID,
@@ -111,25 +119,34 @@ async def send_message(
     ]
     usage = UsageService(db, tenant)
 
+    # RAG kicks in as soon as the workspace has at least one ready document.
+    embedder = _embedder_or_none()
+    retrieval = RetrievalService(db, tenant, embedder) if embedder else None
+    use_rag = retrieval is not None and await retrieval.has_ready_documents()
+    toolbox = AgentToolbox(db, tenant, retrieval)
+
     async def event_stream() -> AsyncIterator[str]:
         try:
-            stream = usage.tracked_stream(
-                provider, FEATURE_CHAT, tenant.user_id, llm_messages, system=SYSTEM_PROMPT
-            )
-            async for event in stream:
-                if isinstance(event, TextDelta):
-                    yield _sse({"type": "delta", "text": event.text})
-                elif isinstance(event, StreamEnd):
-                    completion = event.completion
-                    message = await service.add_message(
-                        conversation_id, ROLE_ASSISTANT, completion.text
-                    )
-                    await limiter.record_tokens(
-                        tenant.organization_id,
-                        completion.usage.input_tokens + completion.usage.output_tokens,
-                    )
-                    await db.commit()
-                    yield _sse({"type": "done", "message_id": str(message.id)})
+            agent = run_agent(provider, usage, toolbox, tenant, llm_messages, use_rag)
+            async for event in agent:
+                if event["type"] != "final":
+                    yield _sse(event)
+                    continue
+                message = await service.add_message(
+                    conversation_id,
+                    ROLE_ASSISTANT,
+                    event["text"],
+                    citations=event["citations"],
+                )
+                await limiter.record_tokens(tenant.organization_id, event["tokens"])
+                await db.commit()
+                yield _sse(
+                    {
+                        "type": "done",
+                        "message_id": str(message.id),
+                        "citations": event["citations"],
+                    }
+                )
         except LLMError as exc:
             # The response is already streaming — errors travel as events.
             yield _sse({"type": "error", "message": str(exc)})

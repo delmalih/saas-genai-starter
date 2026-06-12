@@ -214,14 +214,14 @@ Goal: the demonstrator feature — full ingestion pipeline + cited retrieval in 
 **Acceptance criteria**
 - A 50-page PDF ingests end-to-end locally in < 60s; chunks carry document id, page, and position.
 
-### [ ] SGS-033 — Retrieval & citations (1d)
+### [x] SGS-033 — Retrieval & citations (1d)
 **Depends on:** SGS-032
 - Retrieval service: embed query → pgvector cosine top-k (tenant-scoped) → optional re-rank hook (no-op v1).
 - Citation type: document name, page, snippet, score.
 **Acceptance criteria**
 - Retrieval unit-tested against a seeded fixture corpus; cross-tenant leakage test passes.
 
-### [ ] SGS-034 — RAG chat with tool use (1.5d)
+### [x] SGS-034 — RAG chat with tool use (1.5d)
 **Depends on:** SGS-033, SGS-025
 - Chat agent gains tools: `search_documents` (retrieval) and `get_workspace_stats` (e.g. "how many documents have I uploaded?" — demonstrates tool use over tenant data).
 - Responses include structured citations; web UI renders citation chips with a source panel (document + page + snippet).
@@ -229,13 +229,13 @@ Goal: the demonstrator feature — full ingestion pipeline + cited retrieval in 
 **Acceptance criteria**
 - Asking a question about an uploaded document streams an answer with at least one correct citation; asking about workspace stats triggers the second tool.
 
-### [ ] SGS-035 — Structured metadata extraction (0.5d)
+### [x] SGS-035 — Structured metadata extraction (0.5d)
 **Depends on:** SGS-032
 - On ingestion, one structured-output call extracts: title, language, summary (2 sentences), topics (max 5). Stored on the document, shown in the UI.
 **Acceptance criteria**
 - Extraction is schema-validated; a failure does not fail ingestion (document stays `ready`, metadata nullable).
 
-### [ ] SGS-036 — Documents UI (1d)
+### [x] SGS-036 — Documents UI (1d)
 **Depends on:** SGS-030, SGS-035
 - `(app)/documents`: upload with progress, list with status polling (or SSE), metadata display, delete (removes chunks + storage object).
 **Acceptance criteria**

@@ -371,11 +371,29 @@ export interface components {
             role: "user" | "assistant";
             /** Content */
             content: string;
+            /** Citations */
+            citations?: components["schemas"]["CitationOut"][] | null;
             /**
              * Created At
              * Format: date-time
              */
             created_at: string;
+        };
+        /** CitationOut */
+        CitationOut: {
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /** Document Name */
+            document_name: string;
+            /** Page */
+            page?: number | null;
+            /** Snippet */
+            snippet: string;
+            /** Score */
+            score?: number | null;
         };
         /** ConversationCreate */
         ConversationCreate: {
@@ -458,6 +476,14 @@ export interface components {
             status: "uploaded" | "processing" | "ready" | "failed";
             /** Error */
             error: string | null;
+            /** Title */
+            title: string | null;
+            /** Language */
+            language: string | null;
+            /** Summary */
+            summary: string | null;
+            /** Topics */
+            topics: string[] | null;
             /**
              * Created At
              * Format: date-time

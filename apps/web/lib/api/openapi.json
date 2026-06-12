@@ -1323,6 +1323,20 @@
             "type": "string",
             "title": "Content"
           },
+          "citations": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/CitationOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Citations"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -1337,6 +1351,52 @@
           "created_at"
         ],
         "title": "ChatMessageOut"
+      },
+      "CitationOut": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "document_name": {
+            "type": "string",
+            "title": "Document Name"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "document_name",
+          "snippet"
+        ],
+        "title": "CitationOut"
       },
       "ConversationCreate": {
         "properties": {
@@ -1508,6 +1568,53 @@
             ],
             "title": "Error"
           },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "topics": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topics"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -1522,6 +1629,10 @@
           "size_bytes",
           "status",
           "error",
+          "title",
+          "language",
+          "summary",
+          "topics",
           "created_at"
         ],
         "title": "DocumentOut"

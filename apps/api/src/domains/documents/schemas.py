@@ -14,4 +14,8 @@ class DocumentOut(BaseModel):
     size_bytes: int
     status: DocumentStatus
     error: str | None
+    title: str | None
+    language: str | None
+    summary: str | None
+    topics: list[str] | None
     created_at: datetime
