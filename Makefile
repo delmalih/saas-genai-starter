@@ -1,4 +1,4 @@
-.PHONY: setup dev dev-api dev-web test test-api test-web lint lint-api lint-web evals migrate makemigration generate-client
+.PHONY: setup dev dev-api dev-web test test-api test-web lint lint-api lint-web evals migrate makemigration generate-client bootstrap
 
 setup: ## Install all dependencies and create local env files
 	pnpm install
@@ -35,6 +35,9 @@ lint-api:
 lint-web:
 	pnpm --filter web lint
 	pnpm --filter web exec tsc --noEmit
+
+bootstrap: ## Rebrand the starter into your product (see BOOTSTRAP.md)
+	python3 scripts/bootstrap.py
 
 evals: ## Run the RAG eval harness (requires ANTHROPIC_API_KEY + VOYAGE_API_KEY)
 	cd apps/api && PYTHONPATH=. uv run python ../../evals/runner.py $(ARGS)

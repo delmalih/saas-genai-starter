@@ -22,6 +22,9 @@ README), even if the maintainer communicates in French. Never write French in co
 - Branch names: `sgs-021-llm-resilience`. Commit messages: conventional commits with the
   ticket ID, e.g. `feat(llm): add retry with exponential backoff [SGS-021]`.
 - Every ticket has acceptance criteria — they define "done". Write the tests they imply.
+- Asked to turn this starter into a new product (rename, rebrand, new domain)?
+  Follow `BOOTSTRAP.md` — collect its parameters, run `scripts/bootstrap.py`,
+  then `make generate-client && make lint && make test` as the gate.
 
 ## Commands
 

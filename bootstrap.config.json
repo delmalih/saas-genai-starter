@@ -1,0 +1,8 @@
+{
+  "$comment": "Bootstrap manifest — the identity strings scripts/bootstrap.py rewrites across the repo. See BOOTSTRAP.md. Keep values in sync with the codebase: the script maps FROM these values TO the ones you provide.",
+  "productName": "SaaS GenAI Starter",
+  "slug": "saas-genai-starter",
+  "tagline": "The production-grade starter for GenAI products",
+  "description": "Production-grade open-source SaaS starter for GenAI products: multi-tenancy, LLM cost tracking, observability, infra as code.",
+  "githubRepo": "delmalih/saas-genai-starter"
+}
