@@ -1,0 +1,87 @@
+name: Deploy API
+
+# Keyless deploy: GitHub OIDC -> Workload Identity Federation -> deployer SA.
+# Repository variables (Settings > Secrets and variables > Actions > Variables):
+#   GCP_PROJECT_ID    e.g. saas-genai-starter-demo
+#   GCP_WIF_PROVIDER  terraform output wif_provider
+#   GCP_DEPLOYER_SA   terraform output deployer_service_account
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/api/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+env:
+  REGION: us-east1
+  SERVICE: api
+  IMAGE: us-east1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/saas-genai-starter/api:${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - run: gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/api
+          push: true
+          tags: ${{ env.IMAGE }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Values fetched this way are automatically masked in logs.
+      - name: Read database URL
+        id: secrets
+        uses: google-github-actions/get-secretmanager-secrets@v3
+        with:
+          secrets: |-
+            database_url:${{ vars.GCP_PROJECT_ID }}/database-url
+
+      - uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: true
+
+      - name: Run migrations
+        working-directory: apps/api
+        env:
+          DATABASE_URL: ${{ steps.secrets.outputs.database_url }}
+          REDIS_URL: redis://localhost:6379/0 # settings import only
+        run: |
+          uv sync --frozen --no-dev
+          uv run alembic upgrade head
+
+      # Only the image changes — env vars and secret refs stay as Terraform set them.
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          image: ${{ env.IMAGE }}
+
+      - name: Smoke check
+        run: |
+          URL=$(gcloud run services describe ${{ env.SERVICE }} \
+            --region ${{ env.REGION }} --format 'value(status.url)')
+          curl --fail --silent --show-error --retry 5 --retry-delay 5 \
+            --retry-all-errors "$URL/health"
