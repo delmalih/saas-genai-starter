@@ -8,9 +8,16 @@ const googleEnabled =
 
 export const auth = betterAuth({
   database: new Pool({
-    connectionString: process.env.DATABASE_URL,
+    // Pgbouncer poolers (e.g. Neon's) reject the search_path startup
+    // parameter, so auth must connect directly. The Neon Vercel integration
+    // injects DATABASE_URL_UNPOOLED; locally only DATABASE_URL is set.
+    connectionString:
+      process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL,
     // Auth tables live in their own schema, away from API-owned tables.
     options: "-c search_path=auth",
+    // Direct (unpooled) connections are a scarce resource on managed
+    // Postgres free tiers — keep the per-instance pool small.
+    max: 3,
   }),
   emailAndPassword: {
     enabled: true,
