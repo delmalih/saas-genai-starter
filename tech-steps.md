@@ -450,7 +450,7 @@ domain-adapted product from a handful of parameters.
 > Ollama (needs a per-org base-URL setting since the server must reach the
 > user's instance).
 
-### [~] SGS-081 — SSO logins: Google, GitHub, Apple (1d)
+### [x] SGS-081 — SSO logins: Google, GitHub, Apple (1d)
 **Depends on:** SGS-010
 - Google is already wired (env-gated) — document the OAuth app setup and enable it
   on the demo. Add **GitHub** (the audience of this repo) and **Apple** via Better
