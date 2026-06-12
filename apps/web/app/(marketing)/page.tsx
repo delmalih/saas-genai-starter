@@ -25,9 +25,27 @@ const features = [
   },
 ] as const;
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "SaaS GenAI Starter",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Web",
+  description:
+    "Production-grade open-source SaaS starter for GenAI products: multi-tenancy, BYO-key LLM layer, RAG with citations, usage tracking, evals, infrastructure as code.",
+  license: "https://opensource.org/license/mit",
+  url: "https://github.com/delmalih/saas-genai-starter",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+};
+
 export default function MarketingPage() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4">
+      <script
+        type="application/ld+json"
+        // Static literal above — nothing user-controlled is interpolated.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <section className="flex flex-col items-center gap-6 py-24 text-center">
         <h1 className="max-w-3xl font-heading text-4xl font-bold tracking-tight sm:text-5xl">
           The production-grade starter for GenAI products
