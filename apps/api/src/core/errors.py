@@ -49,6 +49,17 @@ class Conflict(ApiError):
         super().__init__(409, "conflict", message)
 
 
+class QuotaExceeded(ApiError):
+    def __init__(self, message: str, retry_after_seconds: int) -> None:
+        super().__init__(
+            429,
+            "quota_exceeded",
+            message,
+            headers={"Retry-After": str(retry_after_seconds)},
+        )
+        self.retry_after_seconds = retry_after_seconds
+
+
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def handle_api_error(request: Request, exc: ApiError) -> JSONResponse:

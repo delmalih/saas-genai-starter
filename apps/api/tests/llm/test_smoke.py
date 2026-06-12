@@ -52,3 +52,32 @@ async def test_real_embeddings() -> None:
     result = await provider.embed(["hello world", "bonjour le monde"])
     assert len(result.embeddings) == 2
     assert len(result.embeddings[0]) > 100
+
+
+@requires_anthropic
+async def test_prompt_cache_hits_on_repeated_call() -> None:
+    """Second call with the same system prompt must read from the cache.
+
+    The system prompt must exceed the model's minimum cacheable prefix
+    (2048 tokens on claude-sonnet-4-6), hence the padding.
+    """
+    provider = AnthropicProvider(api_key=os.environ["ANTHROPIC_API_KEY"], model="claude-sonnet-4-6")
+    stable_system = (
+        "You are a meticulous assistant for the saas-genai-starter test suite. "
+        "Follow these numbered rules precisely.\n"
+        + "\n".join(
+            f"Rule {i}: always stay concise, factual and deterministic in case {i}."
+            for i in range(400)
+        )
+    )
+
+    first = await provider.complete(
+        [Message(role="user", content="Say: one")], system=stable_system, max_tokens=8
+    )
+    second = await provider.complete(
+        [Message(role="user", content="Say: two")], system=stable_system, max_tokens=8
+    )
+
+    # First call either writes the cache or reads a still-warm one.
+    assert first.usage.cache_write_tokens > 0 or first.usage.cache_read_tokens > 0
+    assert second.usage.cache_read_tokens > 0

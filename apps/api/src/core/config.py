@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     llm_chat_model: str = "claude-sonnet-4-6"
     llm_embedding_model: str = "voyage-3.5"
     llm_max_output_tokens: int = 4096
+    # Per-tenant limits on LLM-consuming endpoints.
+    rate_limit_requests_per_minute: int = 30
+    rate_limit_tokens_per_day: int = 500_000
 
     @property
     def is_production(self) -> bool:

@@ -157,13 +157,13 @@ resilience, rate limiting. This epic is the core value of the repo.
 **Acceptance criteria**
 - Costs match the pricing table in tests; usage rows are written even when the call fails mid-stream (partial usage captured).
 
-### [ ] SGS-023 — Prompt caching (0.5d)
+### [x] SGS-023 — Prompt caching (0.5d)
 **Depends on:** SGS-020
 - Anthropic prompt caching enabled for stable prefixes (system prompts, tool definitions); cache hits reflected in cost accounting (cached-token pricing).
 **Acceptance criteria**
 - Smoke test demonstrates cache-read tokens on a repeated call; costs account for the discount.
 
-### [ ] SGS-024 — Per-tenant rate limiting (0.5d)
+### [x] SGS-024 — Per-tenant rate limiting (0.5d)
 **Depends on:** SGS-013
 - Redis-backed sliding-window limiter on LLM-consuming endpoints (requests/min and tokens/day per tenant, env-configurable).
 - 429 responses include `Retry-After`; limits surfaced in the usage UI later.

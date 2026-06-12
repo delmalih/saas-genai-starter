@@ -200,3 +200,9 @@ async def test_daily_costs_grouped_and_tenant_scoped(
 
     total = await repo.total_cost(start, end)
     assert total == Decimal("0.08")
+
+
+def test_cache_read_is_discounted_10x() -> None:
+    uncached = cost_for("claude-sonnet-4-6", Usage(input_tokens=100_000))
+    cached = cost_for("claude-sonnet-4-6", Usage(cache_read_tokens=100_000))
+    assert cached == uncached / 10
