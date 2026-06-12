@@ -163,6 +163,8 @@ class UsageService:
         started: float,
         commit: bool = False,
     ) -> LLMUsage:
+        latency_ms = int((time.monotonic() - started) * 1000)
+        cost = cost_for(model, usage)
         row = self._repo.add(
             LLMUsage(
                 feature=feature,
@@ -172,13 +174,43 @@ class UsageService:
                 output_tokens=usage.output_tokens,
                 cache_read_tokens=usage.cache_read_tokens,
                 cache_write_tokens=usage.cache_write_tokens,
-                cost_usd=cost_for(model, usage),
-                latency_ms=int((time.monotonic() - started) * 1000),
+                cost_usd=cost,
+                latency_ms=latency_ms,
                 created_by=created_by,
             )
         )
+        self._emit_span(feature, model, usage, status, latency_ms, float(cost))
         if commit:
             await self._db.commit()
         else:
             await self._db.flush()
         return row
+
+    def _emit_span(
+        self,
+        feature: str,
+        model: str,
+        usage: Usage,
+        status: str,
+        latency_ms: int,
+        cost_usd: float,
+    ) -> None:
+        from src.core.telemetry import get_tracer
+
+        # Retroactive span covering the call duration — a no-op when
+        # telemetry is disabled.
+        span = get_tracer().start_span(
+            "llm.call", start_time=time.time_ns() - latency_ms * 1_000_000
+        )
+        span.set_attributes(
+            {
+                "llm.feature": feature,
+                "llm.model": model,
+                "llm.status": status,
+                "llm.input_tokens": usage.input_tokens,
+                "llm.output_tokens": usage.output_tokens,
+                "llm.cache_read_tokens": usage.cache_read_tokens,
+                "llm.cost_usd": cost_usd,
+            }
+        )
+        span.end()

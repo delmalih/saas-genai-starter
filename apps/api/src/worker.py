@@ -62,7 +62,10 @@ async def ingest_document_job(
 
 
 async def startup(ctx: dict[str, Any]) -> None:
+    from src.core.telemetry import setup_telemetry
+
     setup_logging()
+    setup_telemetry()
     logger.info("worker.started")
 
 

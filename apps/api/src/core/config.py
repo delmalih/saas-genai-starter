@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     # Document storage (local disk path in dev; GCS in production).
     storage_dir: str = "./storage"
     max_upload_bytes: int = 20 * 1024 * 1024
+    # Tracing — spans export to OTEL_EXPORTER_OTLP_ENDPOINT when set,
+    # to the console otherwise.
+    otel_enabled: bool = False
+    otel_service_name: str = "saas-genai-starter-api"
+    otel_exporter_otlp_endpoint: str | None = None
 
     @property
     def is_production(self) -> bool:

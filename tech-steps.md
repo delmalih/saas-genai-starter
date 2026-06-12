@@ -247,7 +247,7 @@ Goal: the demonstrator feature — full ingestion pipeline + cited retrieval in 
 
 Goal: one-command reproducible cloud environment; a public live demo.
 
-### [ ] SGS-040 — API container & production hardening (0.5d)
+### [x] SGS-040 — API container & production hardening (0.5d)
 **Depends on:** SGS-003
 - Multi-stage Dockerfile (uv, non-root user, healthcheck), gunicorn/uvicorn workers config, production settings profile (CORS, docs disabled or gated).
 **Acceptance criteria**
@@ -272,7 +272,7 @@ Goal: one-command reproducible cloud environment; a public live demo.
 **Acceptance criteria**
 - A merged PR reaches the demo environment with zero manual steps.
 
-### [ ] SGS-044 — OpenTelemetry & structured logs (1d)
+### [x] SGS-044 — OpenTelemetry & structured logs (1d)
 **Depends on:** SGS-025
 - OTel tracing on API + worker (FastAPI, SQLAlchemy, httpx instrumentation), trace context propagated into LLM call spans (model, tokens, cost as span attributes).
 - Export: console in dev, Cloud Trace in prod. Request id + tenant id on every log line.
