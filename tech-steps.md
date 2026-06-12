@@ -178,7 +178,7 @@ resilience, rate limiting. This epic is the core value of the repo.
 **Acceptance criteria**
 - E2E happy path: create conversation → stream a reply → reload page → history intact. Usage rows recorded with feature tag `chat`.
 
-### [ ] SGS-026 — Usage dashboard (1d)
+### [x] SGS-026 — Usage dashboard (1d)
 **Depends on:** SGS-022, SGS-025
 - `(app)/usage`: cost over time (day granularity), breakdown by feature and model, token counts, current rate-limit status.
 - API aggregation endpoints with date-range params.

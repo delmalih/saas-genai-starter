@@ -263,6 +263,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/usage/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Daily Usage */
+        get: operations["daily_usage_usage_daily_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usage/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Usage Summary */
+        get: operations["usage_summary_usage_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -338,6 +372,30 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** DailyCostOut */
+        DailyCostOut: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Feature */
+            feature: string;
+            /** Model */
+            model: string;
+            /** Cost Usd */
+            cost_usd: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Cache Read Tokens */
+            cache_read_tokens: number;
+            /** Cache Write Tokens */
+            cache_write_tokens: number;
+            /** Calls */
+            calls: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -453,6 +511,21 @@ export interface components {
         SendMessageIn: {
             /** Content */
             content: string;
+        };
+        /** UsageLimitsOut */
+        UsageLimitsOut: {
+            /** Requests Per Minute */
+            requests_per_minute: number;
+            /** Tokens Per Day */
+            tokens_per_day: number;
+            /** Tokens Used Today */
+            tokens_used_today: number;
+        };
+        /** UsageSummaryOut */
+        UsageSummaryOut: {
+            /** Total Cost Usd */
+            total_cost_usd: number;
+            limits: components["schemas"]["UsageLimitsOut"];
         };
         /** ValidationError */
         ValidationError: {
@@ -1039,6 +1112,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    daily_usage_usage_daily_get: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: {
+                "X-Org-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailyCostOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    usage_summary_usage_summary_get: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: {
+                "X-Org-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsageSummaryOut"];
                 };
             };
             /** @description Validation Error */

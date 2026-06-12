@@ -868,6 +868,176 @@
           }
         }
       }
+    },
+    "/usage/daily": {
+      "get": {
+        "tags": [
+          "usage"
+        ],
+        "summary": "Daily Usage",
+        "operationId": "daily_usage_usage_daily_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          },
+          {
+            "name": "X-Org-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Org-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyCostOut"
+                  },
+                  "title": "Response Daily Usage Usage Daily Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usage/summary": {
+      "get": {
+        "tags": [
+          "usage"
+        ],
+        "summary": "Usage Summary",
+        "operationId": "usage_summary_usage_summary_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          },
+          {
+            "name": "X-Org-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Org-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageSummaryOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1010,6 +1180,60 @@
           "created_at"
         ],
         "title": "ConversationOut"
+      },
+      "DailyCostOut": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "feature": {
+            "type": "string",
+            "title": "Feature"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "cost_usd": {
+            "type": "number",
+            "title": "Cost Usd"
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens"
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens"
+          },
+          "cache_read_tokens": {
+            "type": "integer",
+            "title": "Cache Read Tokens"
+          },
+          "cache_write_tokens": {
+            "type": "integer",
+            "title": "Cache Write Tokens"
+          },
+          "calls": {
+            "type": "integer",
+            "title": "Calls"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "feature",
+          "model",
+          "cost_usd",
+          "input_tokens",
+          "output_tokens",
+          "cache_read_tokens",
+          "cache_write_tokens",
+          "calls"
+        ],
+        "title": "DailyCostOut"
       },
       "HTTPValidationError": {
         "properties": {
@@ -1277,6 +1501,46 @@
           "content"
         ],
         "title": "SendMessageIn"
+      },
+      "UsageLimitsOut": {
+        "properties": {
+          "requests_per_minute": {
+            "type": "integer",
+            "title": "Requests Per Minute"
+          },
+          "tokens_per_day": {
+            "type": "integer",
+            "title": "Tokens Per Day"
+          },
+          "tokens_used_today": {
+            "type": "integer",
+            "title": "Tokens Used Today"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requests_per_minute",
+          "tokens_per_day",
+          "tokens_used_today"
+        ],
+        "title": "UsageLimitsOut"
+      },
+      "UsageSummaryOut": {
+        "properties": {
+          "total_cost_usd": {
+            "type": "number",
+            "title": "Total Cost Usd"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/UsageLimitsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_cost_usd",
+          "limits"
+        ],
+        "title": "UsageSummaryOut"
       },
       "ValidationError": {
         "properties": {

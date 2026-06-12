@@ -8,6 +8,7 @@ from src.core.logging import setup_logging
 from src.domains.chat.router import router as chat_router
 from src.domains.tenants.router import invitations_router
 from src.domains.tenants.router import router as tenants_router
+from src.domains.usage.router import router as usage_router
 from src.domains.users.router import router as users_router
 
 
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
     app.include_router(tenants_router)
     app.include_router(invitations_router)
     app.include_router(chat_router)
+    app.include_router(usage_router)
     return app
 
 

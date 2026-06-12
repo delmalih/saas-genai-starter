@@ -206,3 +206,72 @@ def test_cache_read_is_discounted_10x() -> None:
     uncached = cost_for("claude-sonnet-4-6", Usage(input_tokens=100_000))
     cached = cost_for("claude-sonnet-4-6", Usage(cache_read_tokens=100_000))
     assert cached == uncached / 10
+
+
+# --- endpoints ---------------------------------------------------------------
+
+
+@pytest.fixture
+async def org_headers(db_session: AsyncSession, auth_headers, tenant: TenantContext):
+    return {**auth_headers(user_id="alice"), "X-Org-Id": str(tenant.organization_id)}
+
+
+async def test_usage_endpoints_match_aggregates(
+    client, org_headers, db_session: AsyncSession, tenant: TenantContext
+) -> None:
+    now = datetime.now(UTC).replace(hour=12)
+    db_session.add_all(
+        [
+            LLMUsage(
+                tenant_id=tenant.organization_id,
+                feature="chat",
+                model="claude-sonnet-4-6",
+                cost_usd=Decimal("0.25"),
+                input_tokens=1000,
+                output_tokens=200,
+                created_by="alice",
+                created_at=now,
+            ),
+            LLMUsage(
+                tenant_id=tenant.organization_id,
+                feature="rag",
+                model="claude-sonnet-4-6",
+                cost_usd=Decimal("0.10"),
+                input_tokens=500,
+                output_tokens=100,
+                created_by="alice",
+                created_at=now,
+            ),
+        ]
+    )
+    await db_session.flush()
+
+    response = await client.get("/usage/daily", headers=org_headers)
+    assert response.status_code == 200
+    daily = response.json()
+    assert len(daily) == 2
+    assert {d["feature"] for d in daily} == {"chat", "rag"}
+    assert sum(d["cost_usd"] for d in daily) == pytest.approx(0.35)
+
+    response = await client.get("/usage/summary", headers=org_headers)
+    summary = response.json()
+    assert summary["total_cost_usd"] == pytest.approx(0.35)
+    assert summary["limits"]["tokens_per_day"] > 0
+
+
+async def test_usage_empty_tenant(client, org_headers) -> None:
+    response = await client.get("/usage/daily", headers=org_headers)
+    assert response.status_code == 200
+    assert response.json() == []
+
+    response = await client.get("/usage/summary", headers=org_headers)
+    assert response.json()["total_cost_usd"] == 0
+
+
+async def test_usage_invalid_range_is_400(client, org_headers) -> None:
+    response = await client.get(
+        "/usage/daily",
+        params={"start": "2026-06-10", "end": "2026-06-01"},
+        headers=org_headers,
+    )
+    assert response.status_code == 400

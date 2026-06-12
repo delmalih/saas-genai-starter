@@ -43,6 +43,18 @@ class TenantRateLimiter:
         except redis.RedisError as exc:
             logger.error("rate_limit.redis_unavailable", error=str(exc))
 
+    async def tokens_used_today(self, tenant_id: uuid.UUID) -> int:
+        try:
+            used = await self._redis.get(self._tokens_key(tenant_id))
+        except redis.RedisError as exc:
+            logger.error("rate_limit.redis_unavailable", error=str(exc))
+            return 0
+        return int(used) if used else 0
+
+    @property
+    def limits(self) -> tuple[int, int]:
+        return self._requests_per_minute, self._tokens_per_day
+
     async def record_tokens(self, tenant_id: uuid.UUID, tokens: int) -> None:
         if tokens <= 0:
             return
