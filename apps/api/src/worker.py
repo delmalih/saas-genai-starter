@@ -12,6 +12,7 @@ import structlog
 from arq.connections import RedisSettings
 from arq.worker import Retry
 
+import src.all_models  # noqa: F401 — completes the SQLAlchemy registry
 from src.core.config import get_settings
 from src.core.db import get_sessionmaker
 from src.core.logging import setup_logging
