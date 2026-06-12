@@ -272,7 +272,7 @@ and self-hosters aren't locked to one vendor. Strategy decision 2026-06-12.
 - Same conversation flow works against both providers (fakes in tests);
   usage rows carry the right model + cost for each provider's pricing.
 
-### [ ] SGS-072 — Provider settings UI (0.5d)
+### [x] SGS-072 — Provider settings UI (0.5d)
 **Depends on:** SGS-071, SGS-015
 - Settings page section "AI Provider": provider select, model select
   (filtered by provider), key inputs with masked state, test-connection

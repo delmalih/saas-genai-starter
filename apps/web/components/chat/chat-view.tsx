@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileSearchIcon, SendIcon } from "lucide-react";
+import { FileSearchIcon, SendIcon, SettingsIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
@@ -177,7 +178,20 @@ export function ChatView({ conversationId }: { conversationId: string | null }) 
               {streamingText || <span className="animate-pulse">…</span>}
             </MessageBubble>
           ) : null}
-          {error ? <p className="text-center text-sm text-destructive">{error}</p> : null}
+          {error ? (
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-center text-sm text-destructive">{error}</p>
+              {error.toLowerCase().includes("api key") ? (
+                <Link
+                  href="/settings"
+                  className="inline-flex items-center gap-1.5 text-sm underline underline-offset-4"
+                >
+                  <SettingsIcon className="size-3.5" />
+                  Configure your AI provider in Settings
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
           <div ref={bottomRef} />
         </div>
       </div>
