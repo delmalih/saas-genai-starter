@@ -221,9 +221,12 @@ export function MembersCard() {
 
         {isAdmin ? (
           <>
-            <form onSubmit={handleInvite} className="flex max-w-xl items-end gap-2">
+            <form onSubmit={handleInvite} className="flex max-w-xl items-end gap-2 border-t pt-5">
               <div className="flex flex-1 flex-col gap-2">
-                <label htmlFor="invite-email" className="text-sm font-medium">
+                <label
+                  htmlFor="invite-email"
+                  className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                >
                   Invite by email
                 </label>
                 <Input
@@ -250,7 +253,9 @@ export function MembersCard() {
 
             {(invitationsQuery.data ?? []).length > 0 ? (
               <div className="flex flex-col gap-2">
-                <p className="text-sm font-medium">Pending invitations</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Pending invitations
+                </p>
                 <ul className="flex flex-col divide-y">
                   {(invitationsQuery.data ?? []).map((invitation) => (
                     <li key={invitation.id} className="flex items-center gap-3 py-2">

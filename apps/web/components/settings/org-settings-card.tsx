@@ -51,10 +51,13 @@ export function OrgSettingsCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Organization</CardTitle>
-        <CardDescription>
-          Your role here: <span className="font-medium">{activeOrg.role}</span>
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <CardTitle>Organization</CardTitle>
+          <span className="rounded-full border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            {activeOrg.role}
+          </span>
+        </div>
+        <CardDescription>Workspace name and membership.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex max-w-md items-end gap-2">

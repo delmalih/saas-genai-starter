@@ -23,11 +23,11 @@ export function ProfileCard() {
         {isPending || !session ? (
           <Skeleton className="h-10 w-64" />
         ) : (
-          <dl className="grid max-w-md grid-cols-[6rem_1fr] gap-y-1 text-sm">
+          <dl className="grid max-w-md grid-cols-[6rem_1fr] gap-y-2 text-sm">
             <dt className="text-muted-foreground">Name</dt>
-            <dd>{session.user.name}</dd>
+            <dd className="font-medium">{session.user.name}</dd>
             <dt className="text-muted-foreground">Email</dt>
-            <dd>{session.user.email}</dd>
+            <dd className="font-medium">{session.user.email}</dd>
           </dl>
         )}
       </CardContent>
