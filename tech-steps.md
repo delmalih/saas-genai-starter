@@ -126,6 +126,13 @@ Decision: **Better Auth** in the Next.js app (Postgres-backed), FastAPI validate
 **Acceptance criteria**
 - Switching orgs visibly switches all data in the app shell.
 
+### [ ] SGS-016 — Redirect authenticated users away from auth pages (0.25d)
+**Depends on:** SGS-010
+- `/login`, `/signup` (and other guest-only pages) redirect to the app home when a
+  valid session already exists — server-side, before the form renders.
+**Acceptance criteria**
+- A logged-in user navigating to `/login` lands on the home page without a flash of the form.
+
 ---
 
 ## EPIC 2 — LLM Layer
@@ -323,7 +330,7 @@ account on file — set a low budget alert.
 - Local tests cover the endpoint (valid/invalid OIDC, job execution);
   driver switch is config-only.
 
-### [ ] SGS-042 — Web deployment (Vercel Hobby) (0.5d)
+### [x] SGS-042 — Web deployment (Vercel Hobby) (0.5d)
 **Depends on:** SGS-004
 - Vercel project config (Hobby tier), env wiring (API URL, Better Auth
   secrets, Neon pooled DATABASE_URL), preview deployments on PRs.
@@ -407,6 +414,72 @@ account on file — set a low budget alert.
 
 ---
 
+## EPIC 8 — Post-launch roadmap: the startup boilerplate
+
+Positioning: this repo is an **open-source boilerplate for startups** shipping a
+GenAI SaaS — clone it and launch with multi-tenancy, auth, BYO-key LLM layer, RAG,
+usage tracking, evals, $0 infra and CI/CD already production-ready. The roadmap
+below optimizes for that: every ticket either widens who can use the starter
+(providers, SSO, reach) or shortens the path from `git clone` to *their* product.
+A first-class goal is **agent-driven bootstrap**: a coding agent (Claude Code,
+Cursor…) pointed at this repo should be able to turn it into a named, branded,
+domain-adapted product from a handful of parameters.
+
+### [ ] SGS-080 — Additional LLM providers (2d)
+**Depends on:** SGS-071
+- Extend the `ChatProvider`/`EmbeddingProvider` registry beyond Anthropic and
+  OpenAI, keeping Anthropic-shaped content blocks as the lingua franca. Most
+  popular targets, in rough priority order:
+  - **Google Gemini** (Gemini 3 / 2.5 family)
+  - **Mistral** (EU hosting story — a selling point for French startups)
+  - **xAI Grok**
+  - **DeepSeek** (cost leader)
+  - **Cohere** (strong embeddings/rerank alternative to Voyage)
+  - **Open-weights gateways**: Groq / Together / Fireworks (Llama, Qwen…)
+  - **OpenRouter** (one key, many models — cheap way to cover the long tail)
+  - **Ollama** (local/self-hosted, no key at all — great for the demo story)
+- Each provider: streaming, tool use, usage extraction, pricing table entry,
+  MockTransport tests; frontend provider/model picker entries.
+**Acceptance criteria**
+- An org can select any new provider + model from settings with its own key and
+  run the full RAG chat; `docs/extending-llm-providers.md` stays accurate.
+
+### [ ] SGS-081 — SSO logins: Google, GitHub, Apple (1d)
+**Depends on:** SGS-010
+- Google is already wired (env-gated) — document the OAuth app setup and enable it
+  on the demo. Add **GitHub** (the audience of this repo) and **Apple** via Better
+  Auth social providers; account linking when the email matches an existing user.
+**Acceptance criteria**
+- All three buttons work on the public demo; signup → org creation flow unchanged.
+
+### [ ] SGS-082 — SEO & discoverability (1d)
+**Depends on:** SGS-042
+- Public pages (landing, login, docs): per-page metadata, Open Graph + Twitter
+  cards, `sitemap.xml`, `robots.txt`, canonical URLs, JSON-LD (SoftwareApplication),
+  social preview image; Lighthouse SEO ≥ 95.
+- GitHub side: topics, description, social preview — the repo *is* a landing page.
+**Acceptance criteria**
+- Rich preview when sharing the demo URL; Lighthouse SEO ≥ 95 on public pages.
+
+### [ ] SGS-083 — Agent-driven bootstrap ("use this starter") (2d)
+**Depends on:** SGS-053
+- Make the starter parameterizable so an LLM/coding agent can adapt it in one pass:
+  - A single **manifest of bootstrap parameters** (product name, company, domain
+    entity names, locales, color tokens, demo content) and a documented list of
+    every file each parameter touches.
+  - `BOOTSTRAP.md` (or an `AGENTS.md` section): step-by-step instructions written
+    *for a coding agent* — rename, rebrand, swap the example RAG domain for the
+    user's domain, regenerate the typed client, run the test suite as the gate.
+  - An interactive fallback for humans: `make bootstrap` script applying the same
+    manifest.
+  - Keep the demo deployable post-bootstrap: Terraform vars and CI read names from
+    the manifest instead of hardcoding `saas-genai-starter`.
+**Acceptance criteria**
+- "Point Claude Code at this repo with these 6 parameters" produces a renamed,
+  rebranded app with green tests in a fresh clone — verified end-to-end once.
+
+---
+
 ## Suggested execution order
 
 ```
@@ -416,8 +489,8 @@ Week 3:  SGS-022 → 026 (LLM layer + chat + usage)           [done]
 Week 4:  SGS-030 → 036 (RAG), SGS-040 + 044 (container/otel)[done]
 Week 5:  SGS-070 → 072 (BYO keys, multi-provider)
 Week 6:  SGS-046, SGS-041 → 043, SGS-045 ($0 infra + demo)
-Week 7:  SGS-050 → 054 (evals + docs + launch)
-Post-launch: EPIC 6
+Week 7:  SGS-050 → 054 (evals + docs + launch), SGS-016
+Post-launch: EPIC 8 (boilerplate roadmap: providers, SSO, SEO, agent bootstrap), EPIC 6
 ```
 
 Total estimate: ~34 ideal dev-days. Pivot 2026-06-12: BYO-key multi-provider
