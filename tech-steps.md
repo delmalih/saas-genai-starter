@@ -376,7 +376,7 @@ account on file — set a low budget alert.
 **Acceptance criteria**
 - Non-admin users get a 404 (not a 403 — don't reveal the route exists).
 
-### [ ] SGS-053 — README & docs (1d)
+### [x] SGS-053 — README & docs (1d)
 **Depends on:** everything above
 - README: pitch, architecture diagram (mermaid), demo GIF, quickstart (the <10 min path), **"Why these choices"** section (multi-tenancy strategy, cost tracking design, RLS trade-off, queue abstraction), link to live demo.
 - `docs/`: deploy guide, auth flow diagram, extending-the-LLM-layer guide.

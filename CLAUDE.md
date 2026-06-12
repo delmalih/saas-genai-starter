@@ -28,9 +28,10 @@ README), even if the maintainer communicates in French. Never write French in co
 ```bash
 make setup        # Install all deps (pnpm install, uv sync) + create local DB
 make dev          # Boot docker-compose (postgres+pgvector, redis) + API + web
+make worker       # ARQ worker (document ingestion) — needed for uploads
 make test         # Run all tests (web + api)
 make lint         # ruff + mypy (api), eslint + tsc (web)
-make evals        # Run the RAG eval harness (requires API keys)
+make evals        # RAG eval harness — REAL API calls (Anthropic + Voyage keys), ~7 min
 make migrate      # alembic upgrade head
 make makemigration m="..."   # Autogenerate an alembic migration
 make generate-client          # Regenerate the typed TS client from OpenAPI
@@ -71,11 +72,28 @@ evals/                    # YAML datasets + LLM-as-judge runner
   through a repository base class that injects the tenant filter — domain code can never
   forget it. The active org comes from the `X-Org-Id` header, verified against membership.
   Postgres RLS is documented as a hardening option, not implemented in v1.
-- **LLM layer** (`src/llm/`): domain code never imports `anthropic` directly — always go
-  through the `LLMProvider` abstraction. Default chat model: `claude-sonnet-4-6`.
-  Embeddings: Voyage AI (Claude has no embeddings API). Every call records tenant, feature
-  tag, tokens (incl. cached), cost, and latency to the `llm_usage` table. Resilience
-  (retry/backoff, circuit breaker) and per-tenant rate limiting (Redis) live in this layer.
+- **LLM layer** (`src/llm/`): domain code never imports vendor SDKs — always go through
+  the `ChatProvider`/`EmbeddingProvider` protocols. Normalized messages use
+  Anthropic-shaped content blocks as the lingua franca; each provider translates
+  (see `openai_provider.py`). Every call records tenant, feature tag, tokens (incl.
+  cached), cost (Decimal pricing table), and latency to `llm_usage`. Resilience
+  (retry/backoff, circuit breaker — 429s never trip the breaker) and per-tenant rate
+  limiting (Redis, fail-open) live in this layer.
+- **BYO keys / multi-provider** (pivot 2026-06-12): each org picks provider + model and
+  stores its own API keys, Fernet-encrypted (`SECRET_ENCRYPTION_KEY`), write-only through
+  the API (`is_set` + last4 only). Resolution: org key → server env key → 503 with
+  guidance. Providers resolved per tenant in `src/domains/llm_settings/resolver.py`
+  (cached by key fingerprint). Model allowlists live in `src/llm/catalog.py`.
+- **Model registry**: standalone entry points (worker, alembic, scripts) must import
+  `src/all_models.py` — without it, lazy ForeignKey resolution fails with
+  "could not find table". A fresh-interpreter test guards this.
+- **Platform admin** (`/admin`): gated by the `ADMIN_EMAILS` allowlist; non-admins get
+  404 (never 403). The only module allowed to query tenant-owned tables without a
+  TenantContext. Per-org rate-limit overrides live on `organizations` and ride in
+  `TenantContext`.
+- **Evals** (`evals/`): `make evals` runs the real pipeline + LLM judge; baseline in
+  `evals/results/`. Treat a score drop as a regression. Embedding calls are paced for
+  the Voyage free tier (~3 req/min).
 - **Async jobs**: behind a `TaskQueue` interface. ARQ (Redis) is the local/default driver;
   Cloud Tasks is the production driver. Workers are idempotent and retried (max 3).
 - **Storage**: behind an interface — local disk in dev, GCS in prod. Tenant-prefixed paths.
@@ -114,6 +132,11 @@ evals/                    # YAML datasets + LLM-as-judge runner
 ## Environment
 
 - Local infra via `docker-compose`: postgres:16 + pgvector, redis:7.
-- Required env vars (see `.env.example`): `DATABASE_URL`, `REDIS_URL`, `ANTHROPIC_API_KEY`,
-  `VOYAGE_API_KEY`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_API_URL`.
-- Optional/env-gated: Google OAuth creds, Resend (emails), Stripe (billing flag), GCS bucket.
+- Required env vars (see `.env.example`): `DATABASE_URL`, `REDIS_URL`,
+  `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_API_URL`,
+  `SECRET_ENCRYPTION_KEY` (Fernet, for org-provided API keys).
+- LLM keys are optional server-side (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
+  `VOYAGE_API_KEY`) — they are the fallback when an org has not configured its own
+  keys in Settings → AI Provider.
+- Optional/env-gated: Google OAuth creds, Resend (emails), `ADMIN_EMAILS`,
+  OTel (`OTEL_ENABLED`), Stripe (billing flag), GCS bucket.
