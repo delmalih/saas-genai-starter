@@ -14,6 +14,9 @@ class TenantContext:
     organization_id: uuid.UUID
     user_id: str
     role: str
+    # Platform-admin rate-limit overrides carried from the organization row.
+    rpm_override: int | None = None
+    tpd_override: int | None = None
 
 
 async def get_current_tenant(
@@ -38,7 +41,11 @@ async def get_current_tenant(
         # 404, not 403 — don't reveal that the organization exists.
         raise NotFound("Organization not found")
     return TenantContext(
-        organization_id=organization_id, user_id=user.user_id, role=membership.role
+        organization_id=organization_id,
+        user_id=user.user_id,
+        role=membership.role,
+        rpm_override=membership.organization.rate_limit_rpm_override,
+        tpd_override=membership.organization.rate_limit_tpd_override,
     )
 
 

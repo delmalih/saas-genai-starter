@@ -33,11 +33,25 @@ class TenantRateLimiter:
         self._requests_per_minute = requests_per_minute
         self._tokens_per_day = tokens_per_day
 
-    async def check(self, tenant_id: uuid.UUID) -> None:
+    def effective_limits(
+        self, rpm_override: int | None = None, tpd_override: int | None = None
+    ) -> tuple[int, int]:
+        return (
+            rpm_override if rpm_override is not None else self._requests_per_minute,
+            tpd_override if tpd_override is not None else self._tokens_per_day,
+        )
+
+    async def check(
+        self,
+        tenant_id: uuid.UUID,
+        rpm_override: int | None = None,
+        tpd_override: int | None = None,
+    ) -> None:
         """Raises QuotaExceeded if either budget is exhausted."""
+        rpm, tpd = self.effective_limits(rpm_override, tpd_override)
         try:
-            await self._check_requests(tenant_id)
-            await self._check_tokens(tenant_id)
+            await self._check_requests(tenant_id, rpm)
+            await self._check_tokens(tenant_id, tpd)
         except QuotaExceeded:
             raise
         except redis.RedisError as exc:
@@ -51,10 +65,6 @@ class TenantRateLimiter:
             return 0
         return int(used) if used else 0
 
-    @property
-    def limits(self) -> tuple[int, int]:
-        return self._requests_per_minute, self._tokens_per_day
-
     async def record_tokens(self, tenant_id: uuid.UUID, tokens: int) -> None:
         if tokens <= 0:
             return
@@ -67,7 +77,7 @@ class TenantRateLimiter:
         except redis.RedisError as exc:
             logger.error("rate_limit.redis_unavailable", error=str(exc))
 
-    async def _check_requests(self, tenant_id: uuid.UUID) -> None:
+    async def _check_requests(self, tenant_id: uuid.UUID, limit: int) -> None:
         key = f"rl:req:{tenant_id}"
         now = time.time()
         window_start = now - WINDOW_SECONDS
@@ -77,12 +87,12 @@ class TenantRateLimiter:
             pipe.zcard(key)
             _, current = await pipe.execute()
 
-        if current >= self._requests_per_minute:
+        if current >= limit:
             oldest = await self._redis.zrange(key, 0, 0, withscores=True)
             oldest_score = float(oldest[0][1]) if oldest else now
             retry_after = max(1, int(oldest_score + WINDOW_SECONDS - now) + 1)
             raise QuotaExceeded(
-                f"Request limit reached ({self._requests_per_minute}/minute)",
+                f"Request limit reached ({limit}/minute)",
                 retry_after_seconds=retry_after,
             )
 
@@ -91,11 +101,11 @@ class TenantRateLimiter:
             pipe.expire(key, WINDOW_SECONDS * 2)
             await pipe.execute()
 
-    async def _check_tokens(self, tenant_id: uuid.UUID) -> None:
+    async def _check_tokens(self, tenant_id: uuid.UUID, limit: int) -> None:
         used = await self._redis.get(self._tokens_key(tenant_id))
-        if used is not None and int(used) >= self._tokens_per_day:
+        if used is not None and int(used) >= limit:
             raise QuotaExceeded(
-                f"Daily token budget reached ({self._tokens_per_day} tokens/day)",
+                f"Daily token budget reached ({limit} tokens/day)",
                 retry_after_seconds=self._seconds_until_midnight(),
             )
 

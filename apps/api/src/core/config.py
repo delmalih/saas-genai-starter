@@ -38,9 +38,18 @@ class Settings(BaseSettings):
     llm_chat_model: str = "claude-sonnet-4-6"
     llm_embedding_model: str = "voyage-3.5"
     llm_max_output_tokens: int = 4096
-    # Per-tenant limits on LLM-consuming endpoints.
+    # Per-tenant limits on LLM-consuming endpoints (admin can override per org).
     rate_limit_requests_per_minute: int = 30
     rate_limit_tokens_per_day: int = 500_000
+    # Comma-separated emails with access to the platform admin panel.
+    admin_emails: str = ""
+
+    @property
+    def admin_email_set(self) -> frozenset[str]:
+        return frozenset(
+            email.strip().lower() for email in self.admin_emails.split(",") if email.strip()
+        )
+
     # Document storage (local disk path in dev; GCS in production).
     storage_dir: str = "./storage"
     max_upload_bytes: int = 20 * 1024 * 1024

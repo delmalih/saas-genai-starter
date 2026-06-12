@@ -17,6 +17,9 @@ class Organization(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(120))
+    # Platform-admin rate-limit overrides; None = server defaults apply.
+    rate_limit_rpm_override: Mapped[int | None] = mapped_column()
+    rate_limit_tpd_override: Mapped[int | None] = mapped_column()
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     # lazy="raise": in an async codebase, implicit lazy loading either breaks

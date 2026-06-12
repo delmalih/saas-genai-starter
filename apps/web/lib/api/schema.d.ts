@@ -388,6 +388,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/organizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List All Organizations */
+        get: operations["list_all_organizations_admin_organizations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/organizations/{organization_id}/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Organization Limits */
+        patch: operations["update_organization_limits_admin_organizations__organization_id__limits_patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -406,6 +440,33 @@ export interface components {
              * @enum {string}
              */
             role: "owner" | "admin" | "member";
+        };
+        /** AdminOrganizationOut */
+        AdminOrganizationOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Members */
+            members: number;
+            /** Documents */
+            documents: number;
+            /** Conversations */
+            conversations: number;
+            /** Cost 30D Usd */
+            cost_30d_usd: number;
+            /** Rate Limit Rpm Override */
+            rate_limit_rpm_override: number | null;
+            /** Rate Limit Tpd Override */
+            rate_limit_tpd_override: number | null;
         };
         /** Body_upload_document_documents_post */
         Body_upload_document_documents_post: {
@@ -670,6 +731,16 @@ export interface components {
             openai_api_key?: string | null;
             /** Voyage Api Key */
             voyage_api_key?: string | null;
+        };
+        /**
+         * LimitsUpdate
+         * @description None clears the override (server defaults apply again).
+         */
+        LimitsUpdate: {
+            /** Requests Per Minute */
+            requests_per_minute?: number | null;
+            /** Tokens Per Day */
+            tokens_per_day?: number | null;
         };
         /** MeResponse */
         MeResponse: {
@@ -1681,6 +1752,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TestConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_all_organizations_admin_organizations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrganizationOut"][];
+                };
+            };
+        };
+    };
+    update_organization_limits_admin_organizations__organization_id__limits_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LimitsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrganizationOut"];
                 };
             };
             /** @description Validation Error */

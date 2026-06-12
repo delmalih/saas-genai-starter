@@ -101,7 +101,7 @@ async def send_message(
     service = ChatService(db, tenant)
     conversation = await service.get_conversation(conversation_id)
     # Quota check happens before the stream opens — it can still return 429.
-    await limiter.check(tenant.organization_id)
+    await limiter.check(tenant.organization_id, tenant.rpm_override, tenant.tpd_override)
 
     history = await service.get_messages(conversation_id)
     await service.add_message(conversation_id, ROLE_USER, payload.content)

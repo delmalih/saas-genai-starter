@@ -64,7 +64,9 @@ async def usage_summary(
 ) -> UsageSummaryOut:
     range_start, range_end = resolve_range(start, end)
     total = await UsageRepository(db, tenant).total_cost(range_start, range_end)
-    requests_per_minute, tokens_per_day = limiter.limits
+    requests_per_minute, tokens_per_day = limiter.effective_limits(
+        tenant.rpm_override, tenant.tpd_override
+    )
     used_today = await limiter.tokens_used_today(tenant.organization_id)
     return UsageSummaryOut(
         total_cost_usd=float(total),

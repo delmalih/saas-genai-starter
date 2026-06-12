@@ -370,7 +370,7 @@ account on file — set a low budget alert.
 **Acceptance criteria**
 - `make evals` ≥ 0.8 on baseline; negative cases pass (no hallucinated citations).
 
-### [ ] SGS-052 — Admin panel (1d)
+### [x] SGS-052 — Admin panel (1d)
 **Depends on:** SGS-026
 - Internal-only page (env-gated allowlist of admin emails): tenant list, per-tenant usage/cost, document counts, rate-limit overrides.
 **Acceptance criteria**

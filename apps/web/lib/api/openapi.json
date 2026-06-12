@@ -1472,6 +1472,84 @@
           }
         }
       }
+    },
+    "/admin/organizations": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List All Organizations",
+        "operationId": "list_all_organizations_admin_organizations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AdminOrganizationOut"
+                  },
+                  "type": "array",
+                  "title": "Response List All Organizations Admin Organizations Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/organizations/{organization_id}/limits": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Update Organization Limits",
+        "operationId": "update_organization_limits_admin_organizations__organization_id__limits_patch",
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LimitsUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrganizationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1504,6 +1582,75 @@
           "role"
         ],
         "title": "AcceptedInvitationOut"
+      },
+      "AdminOrganizationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "members": {
+            "type": "integer",
+            "title": "Members"
+          },
+          "documents": {
+            "type": "integer",
+            "title": "Documents"
+          },
+          "conversations": {
+            "type": "integer",
+            "title": "Conversations"
+          },
+          "cost_30d_usd": {
+            "type": "number",
+            "title": "Cost 30D Usd"
+          },
+          "rate_limit_rpm_override": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Limit Rpm Override"
+          },
+          "rate_limit_tpd_override": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Limit Tpd Override"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at",
+          "members",
+          "documents",
+          "conversations",
+          "cost_30d_usd",
+          "rate_limit_rpm_override",
+          "rate_limit_tpd_override"
+        ],
+        "title": "AdminOrganizationOut"
       },
       "Body_upload_document_documents_post": {
         "properties": {
@@ -2183,6 +2330,39 @@
         "type": "object",
         "title": "LLMSettingsUpdate",
         "description": "Key semantics: omitted = unchanged, empty string = clear, value = set."
+      },
+      "LimitsUpdate": {
+        "properties": {
+          "requests_per_minute": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requests Per Minute"
+          },
+          "tokens_per_day": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tokens Per Day"
+          }
+        },
+        "type": "object",
+        "title": "LimitsUpdate",
+        "description": "None clears the override (server defaults apply again)."
       },
       "MeResponse": {
         "properties": {
