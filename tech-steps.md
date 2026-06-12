@@ -149,7 +149,7 @@ resilience, rate limiting. This epic is the core value of the repo.
 **Acceptance criteria**
 - Tests simulate 429 storms and provider outages; the breaker opens and recovers as configured.
 
-### [ ] SGS-022 — Token & cost accounting (1d)
+### [x] SGS-022 — Token & cost accounting (1d)
 **Depends on:** SGS-020, SGS-013
 - Every LLM call records: tenant, feature tag (e.g. `chat`, `rag`, `extraction`), model, input/output/cached tokens, computed cost, latency.
 - Pricing table in code (per-model, versioned, easy to update), `llm_usage` table + repository.
