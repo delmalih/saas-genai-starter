@@ -51,7 +51,9 @@ jobs:
           push: true
           tags: ${{ env.IMAGE }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Cache export is best-effort: the GHA cache backend is flaky and
+          # must never fail a deploy.
+          cache-to: type=gha,mode=max,ignore-error=true
 
       # Values fetched this way are automatically masked in logs.
       - name: Read database URL
