@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { enabledSocialProviders } from "@/lib/auth";
 import { AuthCard } from "@/components/auth/auth-card";
+import { CallbackError } from "@/components/auth/callback-error";
 import { SignupForm } from "@/components/auth/signup-form";
 import { SocialButtons } from "@/components/auth/social-buttons";
 
@@ -21,6 +23,10 @@ export default function SignupPage() {
         </>
       }
     >
+      {/* useSearchParams needs a Suspense boundary on statically rendered pages */}
+      <Suspense fallback={null}>
+        <CallbackError />
+      </Suspense>
       <SocialButtons providers={enabledSocialProviders} />
       <SignupForm />
     </AuthCard>

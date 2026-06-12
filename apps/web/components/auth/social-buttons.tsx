@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -39,13 +40,19 @@ const LABELS: Record<string, string> = {
 };
 
 export function SocialButtons({ providers }: { providers: string[] }) {
+  const pathname = usePathname();
   const [pending, setPending] = useState<string | null>(null);
   if (providers.length === 0) return null;
 
   async function start(provider: string) {
     setPending(provider);
-    // Full-page OAuth redirect; only reached again on error.
-    const { error } = await signIn.social({ provider, callbackURL: "/chat" });
+    // Full-page OAuth redirect; only reached again on error. Failures come
+    // back to this page with ?error=, rendered by <CallbackError />.
+    const { error } = await signIn.social({
+      provider,
+      callbackURL: "/chat",
+      errorCallbackURL: pathname,
+    });
     if (error) setPending(null);
   }
 

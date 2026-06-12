@@ -62,6 +62,12 @@ export const auth = betterAuth({
     accountLinking: {
       enabled: true,
       trustedProviders: enabledSocialProviders,
+      // Password signups are never email-verified in this starter (no
+      // verification flow), so the default `true` would reject every link
+      // with `account_not_linked`. Trade-off: someone who pre-registered a
+      // victim's email with a password keeps that password after the victim
+      // links via SSO. Flip to true if you wire signup email verification.
+      requireLocalEmailVerified: false,
     },
   },
   plugins: [
