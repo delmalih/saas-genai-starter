@@ -6,7 +6,7 @@ Thanks for contributing! This guide covers everything you need to get started.
 
 ## Setup
 
-**Prerequisites:** Node.js 18+, Python 3.11+, Docker, [uv](https://github.com/astral-sh/uv), pnpm
+**Prerequisites:** Node.js 22+, Python 3.12+, Docker, [uv](https://github.com/astral-sh/uv), pnpm
 
 ```bash
 # Install all dependencies and create local env files
@@ -50,16 +50,18 @@ chore: bump dependency versions
 
 ## Adding a New AI Provider
 
-The fastest contribution path is adding a new chat or embedding provider.
+The fastest contribution path is adding a new chat or embedding provider — see
+the step-by-step [provider guide](docs/extending-llm-providers.md). Most
+providers speak the OpenAI-compatible API, so adding one is a **catalog entry**,
+not a new class.
 
-Providers live in `apps/api/src/llm/`. Use an existing provider as a template.
-
-Steps:
-1. Add the provider class in `apps/api/src/llm/`
-2. Register it in the provider registry
-3. Add the API key to `apps/api/.env.example` with a comment
-4. Add a brief entry in `README.md` under the providers section
-5. Run `make lint && make test`
+The essentials (the guide has the full checklist):
+1. Add the provider to the catalog in `apps/api/src/llm/catalog.py` (write a
+   native client under `apps/api/src/llm/` only if it isn't OpenAI-compatible).
+2. Add its encrypted key column, settings field, and env fallback.
+3. Add per-model pricing in `apps/api/src/llm/pricing.py`.
+4. Add the key label in the web settings UI, then run `make generate-client`.
+5. Run `make lint && make test` — a parameterized test enforces the checklist.
 
 ---
 
@@ -76,5 +78,16 @@ When opening an issue, use the appropriate template:
 
 - [ ] `make lint` passes
 - [ ] `make test` passes
+- [ ] Typed client regenerated if the API changed (`make generate-client`)
 - [ ] New env vars added to `.env.example`
 - [ ] PR description references the related issue (`Closes #N`)
+
+---
+
+## Code of Conduct & license
+
+By contributing you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md)
+and that your contributions are licensed under the project's [MIT license](LICENSE).
+
+Using this repo as a starter for your own product rather than contributing? See
+[`BOOTSTRAP.md`](BOOTSTRAP.md).
