@@ -18,7 +18,7 @@ PROVIDER_GROQ = "groq"
 PROVIDER_OPENROUTER = "openrouter"
 PROVIDER_VOYAGE = "voyage"
 PROVIDER_COHERE = "cohere"
-
+PROVIDER_TOGETHER = "together"
 
 @dataclass(frozen=True)
 class ChatProviderInfo:
@@ -114,6 +114,14 @@ CHAT_PROVIDERS: dict[str, ChatProviderInfo] = {
         key_field="openrouter_api_key",
         base_url="https://openrouter.ai/api/v1",
     ),
+    PROVIDER_TOGETHER: ChatProviderInfo(
+        id=PROVIDER_TOGETHER,
+        label="Together AI",
+        models=["meta-llama/Llama-3.3-70B-Instruct-Turbo", "mistralai/Mixtral-8x7B-Instruct-v0.1"],
+        default_model="meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        key_field="together_api_key",
+        base_url="https://api.together.xyz/v1",
+    ),
 }
 
 EMBEDDING_PROVIDERS: dict[str, EmbeddingProviderInfo] = {
@@ -163,6 +171,7 @@ KEY_FIELDS = (
     "groq_api_key",
     "openrouter_api_key",
     "cohere_api_key",
+    "together_api_key",
 )
 
 

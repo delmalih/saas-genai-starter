@@ -163,6 +163,19 @@ PRICING: dict[str, ModelPricing] = {
         cache_read_per_mtok=Decimal("0"),
         cache_write_per_mtok=Decimal("0"),
     ),
+    # Together AI — https://www.together.ai/pricing
+    "meta-llama/Llama-3.3-70B-Instruct-Turbo": ModelPricing(
+        input_per_mtok=Decimal("0.88"),
+        output_per_mtok=Decimal("0.88"),
+        cache_read_per_mtok=Decimal("0"),
+        cache_write_per_mtok=Decimal("0"),
+    ),
+    "mistralai/Mixtral-8x7B-Instruct-v0.1": ModelPricing(
+        input_per_mtok=Decimal("0.60"),
+        output_per_mtok=Decimal("0.60"),
+        cache_read_per_mtok=Decimal("0"),
+        cache_write_per_mtok=Decimal("0"),
+    ),
     # OpenRouter routes to many models with per-model pricing — usage is
     # recorded with $0 cost and a warning log (see cost_for below).
 }

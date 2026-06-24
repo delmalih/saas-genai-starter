@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 ChatProviderId = Literal[
-    "anthropic", "openai", "gemini", "mistral", "xai", "deepseek", "groq", "openrouter"
+    "anthropic", "openai", "gemini", "mistral", "xai", "deepseek", "groq", "openrouter", "together"
 ]
 EmbeddingProviderId = Literal["voyage", "openai", "gemini", "mistral", "cohere"]
 
@@ -36,6 +36,7 @@ class LLMSettingsUpdate(BaseModel):
     groq_api_key: str | None = Field(default=None, max_length=512)
     openrouter_api_key: str | None = Field(default=None, max_length=512)
     cohere_api_key: str | None = Field(default=None, max_length=512)
+    together_api_key: str | None = Field(default=None, max_length=512)
 
 
 class ChatProviderOut(BaseModel):
