@@ -36,3 +36,6 @@ storage/
 
 # Eval results are committed intentionally — see evals/results/
 .vercel
+
+# Local content drafts (not part of the public repo)
+.drafts/
