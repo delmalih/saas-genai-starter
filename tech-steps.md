@@ -359,6 +359,23 @@ account on file — set a low budget alert.
 - A stranger with an Anthropic or OpenAI key can sign up and chat with a
   document on the live demo; nothing in the demo consumes maintainer keys.
 
+### [ ] SGS-047 — Error monitoring with Sentry (0.5d)
+**Depends on:** SGS-040, SGS-042, SGS-044
+- Sentry SDK on both apps: `@sentry/nextjs` (web) and `sentry-sdk[fastapi]`
+  (API + ARQ worker + Cloud Tasks ingest endpoint), env-gated by DSN — no DSN
+  set means a no-op, so local and self-host stay clean.
+- Capture unhandled exceptions with `request_id` + `tenant_id` as tags/context;
+  scrub all PII and secrets (`Authorization` header, provider API keys, prompt
+  and response bodies) via `before_send`.
+- Link to existing tracing: reuse the OTel trace id (SGS-044) so a Sentry issue
+  points at its Cloud Trace; tag release + git sha from CI, upload web source maps.
+- Free-tier friendly: sample rates env-configurable (errors 100%, traces low) to
+  stay within Sentry's free developer plan, consistent with the $0/month goal.
+**Acceptance criteria**
+- A forced exception in API and web surfaces in Sentry with tenant/request
+  context and zero secrets; with no DSN set, both apps run identically with
+  Sentry disabled.
+
 ---
 
 ## EPIC 5 — Evals, Admin, Docs & Launch
@@ -487,6 +504,25 @@ domain-adapted product from a handful of parameters.
 **Acceptance criteria**
 - "Point Claude Code at this repo with these 6 parameters" produces a renamed,
   rebranded app with green tests in a fresh clone — verified end-to-end once.
+
+### [ ] SGS-084 — Error monitoring with Sentry (0.5d)
+**Depends on:** SGS-044
+- Env-gated `SENTRY_DSN` on both apps: unset = Sentry fully inert (no init, no
+  network), exactly like the OTel and billing flags.
+- **Web**: `@sentry/nextjs` (client + server + edge configs), release tagged
+  with the git SHA, source maps uploaded from CI.
+- **API**: `sentry-sdk[fastapi]` initialised in `create_app`, low trace sample
+  rate, release = git SHA.
+- **PII discipline** (non-negotiable): `send_default_pii=False`, scrub request
+  bodies and the `Authorization` / `X-Org-Id` headers, and never let org API
+  keys reach Sentry. Tag events with `tenant_id` / `request_id` only (already
+  in the structured-log context).
+- Complements OTel traces with grouped, alertable exceptions and a free-tier
+  dashboard; wire a Slack/email alert on new issue types.
+**Acceptance criteria**
+- A deliberately thrown error appears in Sentry with the release + tenant tag
+  and **no secret** in the payload; with `SENTRY_DSN` unset, zero Sentry code
+  runs (verified by a test or a clean boot log).
 
 ---
 
