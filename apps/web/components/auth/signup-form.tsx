@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@vercel/analytics";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signUp } from "@/lib/auth-client";
@@ -27,6 +28,8 @@ export function SignupForm() {
       setError(signUpError.message ?? "Could not create the account.");
       return;
     }
+    // Conversion event — lets Web Analytics attribute signups to referrers.
+    track("signup");
     router.push("/chat");
     router.refresh();
   }
