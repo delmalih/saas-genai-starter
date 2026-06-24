@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Try the live demo
+    url: https://saas-genai-starter-web.vercel.app
+    about: See the project running before filing an issue.
+  - name: Extending the LLM layer
+    url: https://github.com/delmalih/saas-genai-starter/blob/main/docs/extending-llm-providers.md
+    about: Adding a provider? Start with the fast-path guide.
