@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     groq_api_key: str | None = None
     openrouter_api_key: str | None = None
     cohere_api_key: str | None = None
+    together_api_key: str | None = None
     llm_chat_model: str = "claude-sonnet-4-6"
     llm_embedding_model: str = "voyage-3.5"
     llm_max_output_tokens: int = 4096
