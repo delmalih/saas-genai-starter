@@ -58,10 +58,18 @@ not a new class.
 The essentials (the guide has the full checklist):
 1. Add the provider to the catalog in `apps/api/src/llm/catalog.py` (write a
    native client under `apps/api/src/llm/` only if it isn't OpenAI-compatible).
-2. Add its encrypted key column, settings field, and env fallback.
+2. Add its encrypted key column (plus an Alembic migration via
+   `make makemigration`), settings field, and env fallback.
 3. Add per-model pricing in `apps/api/src/llm/pricing.py`.
-4. Add the key label in the web settings UI, then run `make generate-client`.
-5. Run `make lint && make test` — a parameterized test enforces the checklist.
+4. Add the key label in `apps/web/components/settings/ai-provider-card.tsx`,
+   then run `make generate-client` and **commit the regenerated
+   `apps/web/lib/api/` files** — CI fails if they drift.
+5. Add the provider id to the expected set in
+   `tests/test_llm_settings.py::test_catalog_lists_providers` — it pins the
+   catalog, so that test fails until you update it by hand.
+6. Run `make lint && make test`. The parameterized test in
+   `tests/llm/test_compatible_providers.py` enforces the pricing/key/settings
+   checklist, but the catalog-list test in step 5 is not automatic.
 
 ---
 
